@@ -4,11 +4,11 @@ import { NextAppProvider } from '@toolpad/core/nextjs';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import theme from './styles/theme';
+import theme from '../styles/theme';
 
 const NAVIGATION = [
   {
-    segment: 'dashboard',
+    segment: '',
     title: 'Dashboard',
     icon: <DashboardIcon />,
   },
