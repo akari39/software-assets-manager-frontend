@@ -4,14 +4,21 @@ import { NextAppProvider } from '@toolpad/core/nextjs';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import theme from './styles/theme';
+import AppsIcon from '@mui/icons-material/Apps';
+import theme from '../styles/theme';
+import { PageContainer } from '@toolpad/core';
 
 const NAVIGATION = [
   {
-    segment: 'dashboard',
-    title: 'Dashboard',
+    segment: '',
+    title: '仪表盘',
     icon: <DashboardIcon />,
   },
+  {
+    segment: 'software',
+    title: '软件资产',
+    icon: <AppsIcon />,
+  }
 ];
 
 const BRANDING = {
@@ -23,9 +30,12 @@ export default function RootLayout({ children }) {
     <html lang="zh-cn">
       <body>
         <AppRouterCacheProvider>
-          <NextAppProvider navigation={NAVIGATION} branding={BRANDING} theme={theme}>
+          <NextAppProvider
+            navigation={NAVIGATION}
+            branding={BRANDING}
+            theme={theme}>
             <DashboardLayout>
-              {children}
+                {children}
             </DashboardLayout>
           </NextAppProvider>
         </AppRouterCacheProvider>
