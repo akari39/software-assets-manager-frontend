@@ -12,8 +12,6 @@ export default function Software() {
         [`${SOFTWARE_ALL}`]: { selected: false }
     });
 
-
-
     return (
         <>
             <SingleChoiceChipFilter choices={softwareUsageChoices} />

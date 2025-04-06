@@ -13,8 +13,6 @@ export default function SingleChoiceChipFilter(props) {
         ));
     }
 
-    console.log(choices);
-
     return <Stack
         direction="row"
         spacing="8px"
@@ -25,16 +23,19 @@ export default function SingleChoiceChipFilter(props) {
             marginBottom: "8px",
         }}>
         {
-            Object.keys(choices).map((key, index) =>
-                <Chip
+            Object.keys(choices).map((key, index) => {
+                const choice = choices[key];
+                return <Chip
                     key={key}
                     label={key}
-                    variant={choices[key]['selected'] ? 'filled' : 'outlined'}
+                    variant={choice['selected'] ? 'filled' : 'outlined'}
+                    color={'primary'}
                     onClick={() => {
                         setSelected(key);
-                        choices[key]['onClick'];
+                        choice['onClick'];
                     }}
-                />
+                />;
+            }
             )
         }
     </Stack>
