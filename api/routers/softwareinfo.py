@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import SQLModel, Field
 from typing import Optional, AsyncGenerator
 
 # 定義數據模型 (只在路由文件內部使用)
