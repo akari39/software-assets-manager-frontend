@@ -18,11 +18,8 @@ export default function FilterSearchBar(props) {
         }}>
         <FormControl sx={{ m: 1, minWidth: 100 }} size="small">
             <TextField
-                labelId="demo-select-small-label"
-                id="demo-select-small"
                 select
                 defaultValue={props.default.value}
-                autoWidth
                 label="搜索选项"
                 placeholder='请选择...'
                 variant='standard'
@@ -40,7 +37,7 @@ export default function FilterSearchBar(props) {
                     onChange={props.onSearchChange ?? (() => { })}
                 />
             </FormControl>
-            <Button variant="contained" alignSelf="center" onClick={props.onSearch}>搜索</Button>
+            <Button variant="contained" onClick={props.onSearch}>搜索</Button>
         </Stack>
     </Stack>
 }
