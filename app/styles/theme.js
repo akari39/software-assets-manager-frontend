@@ -14,9 +14,6 @@ const theme = createTheme({
         dark: '#B37800',
         contrastText: '#000000',
     }, 
-    cssVariables: {
-        colorSchemeSelector: 'data-toolpad-color-scheme',
-    },
     colorSchemes: {
         light: true, 
         dark: true
