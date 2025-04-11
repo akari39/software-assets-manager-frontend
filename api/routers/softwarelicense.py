@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import select, SQLModel, Field # 使用 SQLModel
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, AsyncGenerator, List
-from datetime import date, datetime # 导入 date 和 datetime
+from datetime import date, datetime, timezone # 导入 date 和 datetime
 
 # --------------------------------------------------
 # 1. 定義數據模型 (SQLModel) - 反映數據庫表結構
@@ -12,24 +13,31 @@ from datetime import date, datetime # 导入 date 和 datetime
 class SoftwareLicenseBase(SQLModel):
     # 使用數據庫實際的列名 (基於之前的討論)
     # Field descriptions are added for clarity
-    LicenseID: int = Field(description="关联的软件信息ID")
-    LicenseType: str = Field(max_length=100, description="授权模式 (例如: 永久, 订阅-用户)")
-    授权状态: str = Field(default="可用", max_length=50, description="当前授权状态 (例如: 可用, 已分配)")
-    许可证密钥: Optional[str] = Field(default=None, max_length=500, description="许可证密钥或序列号")
-    授权到期时间: Optional[datetime] = Field(default=None, description="授权过期时间 (NULL 表示永久)")
-    职级限制: Optional[str] = Field(default=None, max_length=50, description="允许使用的最低职级名称")
-    备注: Optional[str] = Field(default=None, description="关于此授权的额外说明")
+    SoftwareInfoID: int = Field(description="关联的软件信息ID")
+    LicenseType: int = Field(description="授权模式 (例如: 永久, 订阅-用户)")
+    LicenseStatus: int = Field(default="0", description="当前状态 (例如: 可用, 已分配)")
+    LicenseKey: Optional[str] = Field(default=None, max_length=500, description="LicenseKey或序列号")
+    LicenseExpiredDate: Optional[datetime] = Field(default=None, description="授权过期时间 (NULL 表示永久)")
+    LvLimit: Optional[int] = Field(default=None, description="允许使用的最低职级名称")
+    Remark: Optional[str] = Field(default=None, description="关于此授权的额外说明")
     # 注意: 数据库管理的创建时间和更新时间通常不在Base模型中定义，除非需要手动管理
     # 如果需要在响应中包含它们，在Read模型中添加
 
 class SoftwareLicense(SoftwareLicenseBase, table=True):
     # 指定表名
-    __tablename__ = "软件授权信息"
+    __tablename__ = "License"
     # 定义主键
-    授权信息ID: Optional[int] = Field(default=None, primary_key=True)
+    LicenseID: Optional[int] = Field(default=None, primary_key=True)
     # 如果数据库自动管理时间戳，可以在这里定义，但通常设为 read-only
-    创建时间: Optional[datetime] = Field(default=None, description="记录创建时间 (通常由数据库管理)")
-    最后更新时间: Optional[datetime] = Field(default=None, description="记录最后更新时间 (通常由数据库管理)")
+    CreateTime: Optional[datetime] = Field(
+        default=None,
+        description="记录创建时间 (由数据库自动管理)"
+    )
+
+    LastUpdateTime: Optional[datetime] = Field(
+        default=None,
+        description="记录最后更新时间 (由应用代码管理)"
+    )
 
 # --------------------------------------------------
 # 2. 請求/響應模型 (Pydantic Schemas based on SQLModel)
@@ -40,28 +48,28 @@ class SoftwareLicenseCreate(SoftwareLicenseBase):
 
 class SoftwareLicenseRead(SoftwareLicenseBase):
     # 响应时包含主键
-    授权信息ID: int
+    LicenseID: int
     # 响应时也包含时间戳
-    创建时间: Optional[datetime] = None
-    最后更新时间: Optional[datetime] = None
+    CreateTime: Optional[datetime] = None
+    LastUpdateTime: Optional[datetime] = None
 
 class SoftwareLicenseUpdate(SQLModel):
     # 更新时所有字段都是可选的
-    LicenseID: Optional[int] = None
-    LicenseType: Optional[str] = Field(default=None, max_length=100)
-    授权状态: Optional[str] = Field(default=None, max_length=50)
-    许可证密钥: Optional[str] = Field(default=None, max_length=500)
-    授权到期时间: Optional[datetime] = None
-    职级限制: Optional[str] = Field(default=None, max_length=50)
-    备注: Optional[str] = None
+    SoftwareInfoID: Optional[int] = None
+    LicenseType: Optional[int] = Field(default=None)
+    LicenseStatus: Optional[int] = Field(default=None)
+    LicenseKey: Optional[str] = Field(default=None, max_length=500)
+    LicenseExpiredDate: Optional[datetime] = None
+    LvLimit: Optional[int] = Field(default=None)
+    Remark: Optional[str] = None
     # 通常不直接通过API更新时间戳
 
 # --------------------------------------------------
 # 3. 創建路由實例
 # --------------------------------------------------
 router = APIRouter(
-    prefix="/softwarelicenses",  # 路由前缀
-    tags=["Software Licenses"] # API文档标签
+    prefix="/softwarelicense",  # 路由前缀
+    tags=["Software License"] # API文档标签
 )
 
 # --------------------------------------------------
@@ -93,19 +101,13 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 @router.post("/", response_model=SoftwareLicenseRead, status_code=status.HTTP_201_CREATED)
 async def create_license(
-    license_in: SoftwareLicenseCreate, # 使用Create模型接收请求体
+    license: SoftwareLicenseCreate, # 使用Create模型接收请求体
     session: AsyncSession = Depends(get_session)
 ):
-    """
-    创建一条新的软件授权记录。
-    """
-    # Optional: 在这里添加业务逻辑验证，例如检查 softwareID 是否存在
-    # result = await session.get(SoftwareInfo, license_in.LicenseID) # 假设SoftwareInfo模型存在
-    # if not result:
-    #     raise HTTPException(status_code=400, detail=f"Software with ID {license_in.LicenseID} not found")
-
     # 使用 SQLModel 的 model_validate 创建 ORM 实例
-    db_license = SoftwareLicense.model_validate(license_in)
+    db_license = SoftwareLicense.model_validate(license)
+    db_license.CreateTime = datetime.now() # 设置初始更新时间
+    db_license.LastUpdateTime = datetime.now() # 设置初始更新时间
     session.add(db_license)
     try:
         await session.commit()
@@ -119,9 +121,9 @@ async def create_license(
 @router.get("/", response_model=List[SoftwareLicenseRead])
 async def read_licenses(
     # 添加过滤参数示例
-    license_type: Optional[str] = Query(None, description="按LicenseType筛选"),
-    status: Optional[str] = Query(None, description="按授权状态筛选"),
-    software_id: Optional[int] = Query(None, description="按关联LicenseID筛选"),
+    license_type: Optional[int] = Query(None, description="按LicenseType筛选"),
+    status: Optional[int] = Query(None, description="按LicenseStatus筛选"),
+    software_id: Optional[int] = Query(None, description="按关联SoftwareInfoID筛选"),
     # 分页参数
     page: int = Query(1, ge=1, description="页码"),
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
@@ -137,13 +139,13 @@ async def read_licenses(
     if license_type is not None:
         query = query.where(SoftwareLicense.LicenseType == license_type)
     if status is not None:
-        query = query.where(SoftwareLicense.授权状态 == status)
+        query = query.where(SoftwareLicense.LicenseStatus == status)
     if software_id is not None:
-        query = query.where(SoftwareLicense.LicenseID == software_id)
+        query = query.where(SoftwareLicense.SoftwareInfoID == software_id)
 
     # 执行查询并应用分页和排序
     result = await session.execute(
-        query.offset(offset).limit(limit).order_by(SoftwareLicense.授权信息ID) # 按主键排序
+        query.offset(offset).limit(limit).order_by(SoftwareLicense.LicenseID) # 按主键排序
     )
     licenses = result.scalars().all()
     return licenses # Pydantic 会自动使用 SoftwareLicenseRead 进行序列化
@@ -187,6 +189,8 @@ async def update_license(
     # 动态更新模型实例的属性
     for key, value in update_data.items():
         setattr(db_license, key, value)
+
+    db_license.LastUpdateTime = datetime.now() # 更新时间戳
 
     session.add(db_license) # 将更改添加到会话
     try:

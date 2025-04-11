@@ -30,5 +30,5 @@ app.add_middleware(
 from routers.softwareinfo import router as softwareinfo_router
 app.include_router(softwareinfo_router)
 
-from routers.softwarelicense import router as softwarelicens_router
-app.include_router(softwarelicens_router)
+from routers.softwarelicense import router as softwarelicense_router
+app.include_router(softwarelicense_router)
