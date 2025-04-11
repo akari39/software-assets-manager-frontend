@@ -12,9 +12,12 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/material": "^7.0.1",
+    "@mui/material": "^7.0.2",
     "@mui/material-nextjs": "^7.0.0",
+    "@mui/x-data-grid": "^7.28.3",
+    "@mui/x-data-grid-generator": "^7.28.3",
     "@toolpad/core": "^0.13.0",
+    "axios": "^1.8.4",
     "next": "15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
