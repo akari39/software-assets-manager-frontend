@@ -3,7 +3,7 @@
 import FilterSearchBar from "@/app/components/FilterSearchBar";
 import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
 import { Link, Stack } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridToolbar, GridToolbarExport } from '@mui/x-data-grid';
 import { useMemo, useState } from "react";
 
 const SOFTWARE_USING = '正在使用';
@@ -59,6 +59,16 @@ export default function Software() {
         },
     ];
 
+    function SoftwareAssetsGridToolbar() {
+        return (
+          <GridToolbar
+            csvOptions={{
+              utf8WithBom: true,
+            }}
+          />
+        );
+      }
+
     return (
         <Stack direction="column" >
             <SingleChoiceChipFilter choices={softwareUsageChoices} />
@@ -68,7 +78,7 @@ export default function Software() {
                 placeholder="搜索软件" />
             <DataGrid
                 columns={columns}
-                slots={{ toolbar: GridToolbar }}
+                slots={{ toolbar: SoftwareAssetsGridToolbar }}
                 paginationModel={paginationModel}
                 onPaginationModelChange={(model) => setPaginationModel(model)}
                 rowCount={rows.length}
