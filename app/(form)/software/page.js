@@ -6,8 +6,6 @@ import { Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar, GridToolbarExport } from '@mui/x-data-grid';
 import { useMemo, useState } from "react";
 
-const SOFTWARE_USING = '正在使用';
-const SOFTWARE_ALL = '全部';
 
 const SOFTWARE_SEARCH_OPTIONS = [
     { value: "all", name: "全部" },
@@ -17,14 +15,15 @@ const SOFTWARE_SEARCH_OPTIONS = [
 const SOFTWARE_DEFALUT_SEARCH_OPTIONS = SOFTWARE_SEARCH_OPTIONS[0];
 
 export default function Software() {
-    const [softwareUsageChoices, setSoftwareUsageChoices] = useState({
-        [`${SOFTWARE_USING}`]: { selected: true }, // default choice
-        [`${SOFTWARE_ALL}`]: { selected: false }
-    });
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 25,
     });
+
+    const softwareChoices = [
+        {name: '正在使用', value: '', isDefault: true},
+        {name: '全部', value: ''},
+    ]
 
     const columns = useMemo(() => [
         { field: 'license_id', headerName: '授权ID', flex: 1 },
@@ -61,17 +60,19 @@ export default function Software() {
 
     function SoftwareAssetsGridToolbar() {
         return (
-          <GridToolbar
-            csvOptions={{
-              utf8WithBom: true,
-            }}
-          />
+            <GridToolbar
+                csvOptions={{
+                    utf8WithBom: true,
+                }}
+            />
         );
-      }
+    }
 
     return (
         <Stack direction="column" >
-            <SingleChoiceChipFilter choices={softwareUsageChoices} />
+            <SingleChoiceChipFilter
+                choices={softwareChoices}
+                onClick={(choice) => { }} />
             <FilterSearchBar
                 options={SOFTWARE_SEARCH_OPTIONS}
                 default={SOFTWARE_DEFALUT_SEARCH_OPTIONS}

@@ -1,17 +1,10 @@
 import { Chip, Stack } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function SingleChoiceChipFilter(props) {
-    const [choices, setChoices] = useState(props.choices);
-
-    function setSelected(choiceName) {
-        setChoices((prevState) => Object.fromEntries(
-            Object.entries(prevState).map(([key, value]) => [
-                key,
-                { ...value, selected: key === choiceName }
-            ])
-        ));
-    }
+    const [selectedChoice, setSelectedChoice] = useState(
+        props.choices.find((choice) => choice.isDefault) ?? null
+    );
 
     return <Stack
         direction="row"
@@ -23,16 +16,16 @@ export default function SingleChoiceChipFilter(props) {
             marginBottom: "8px",
         }}>
         {
-            Object.keys(choices).map((key, index) => {
-                const choice = choices[key];
+            props.choices.map((choice) => {
+                const choiceIndex = props.choices.indexOf(choice);
                 return <Chip
-                    key={key}
-                    label={key}
-                    variant={choice['selected'] ? 'filled' : 'outlined'}
+                    key={choiceIndex}
+                    label={choice.name}
+                    variant={selectedChoice == choice ? 'filled' : 'outlined'}
                     color={'primary'}
                     onClick={() => {
-                        setSelected(key);
-                        choice['onClick'];
+                        setSelectedChoice(choice);
+                        props.onClick(choice);
                     }}
                 />;
             }
