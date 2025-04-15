@@ -1,5 +1,5 @@
 import { Chip, Stack } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function SingleChoiceChipFilter(props) {
     const [selectedChoice, setSelectedChoice] = useState(
