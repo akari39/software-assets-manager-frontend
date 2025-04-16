@@ -2,9 +2,11 @@
 
 import FilterSearchBar from "@/app/components/FilterSearchBar";
 import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
+import SoftwareLicense from "@/app/model/SoftwareLicense";
+import axiosInstance from "@/app/service/axiosConfig";
 import { Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar, GridToolbarExport } from '@mui/x-data-grid';
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 
 const SOFTWARE_SEARCH_OPTIONS = [
@@ -14,22 +16,63 @@ const SOFTWARE_SEARCH_OPTIONS = [
 
 const SOFTWARE_DEFALUT_SEARCH_OPTIONS = SOFTWARE_SEARCH_OPTIONS[0];
 
+const SOFTWARE_CHOICES = [
+    { name: '已领用', value: 0, isDefault: true },
+    { name: '全部', value: 1 },
+];
+
 export default function Software() {
+    const [licenseData, setLicenseData] = useState(null);
+    const [status, setStatus] = useState(SOFTWARE_CHOICES.find((choice) => choice.isDefault) ?? null);
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 25,
     });
 
-    const softwareChoices = [
-        {name: '正在使用', value: '', isDefault: true},
-        {name: '全部', value: ''},
-    ]
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [status]);
+
+    async function fetchData() {
+        const response = await axiosInstance.get('/licenses_with_info/', {
+            params: {
+                page: paginationModel.page + 1,
+                limit: paginationModel.pageSize,
+                status: status.value,
+            },
+        });
+        const data = response.data;
+        setLicenseData(SoftwareLicense.fromArray(data));
+    }
 
     const columns = useMemo(() => [
-        { field: 'license_id', headerName: '授权ID', flex: 1 },
-        { field: 'name', headerName: '软件名称', flex: 2 },
-        { field: 'status', headerName: '授权状态', flex: 1 },
-        { field: 'expiration_time', headerName: '过期时间', flex: 2 },
+        {
+            field: 'licenseID',
+            headerName: '授权ID',
+            flex: 1,
+        },
+        {
+            field: 'name',
+            headerName: '软件名称',
+            flex: 2,
+            valueGetter: (value, row) => row.softwareInfo?.softwareInfoName
+        },
+        {
+            field: 'licenseStatus',
+            headerName: '授权状态',
+            valueGetter: (value, row) => row.displayLicenseStatus,
+            flex: 1,
+        },
+        {
+            field: 'licenseExpiredDate',
+            headerName: '过期时间',
+            valueGetter: (value, row) => row.formattedLicenseExpiredDate,
+            flex: 2,
+        },
         {
             field: 'action',
             type: 'actions',
@@ -47,17 +90,6 @@ export default function Software() {
         },
     ]);
 
-    const rows = [
-        {
-            id: 1,
-            license_id: 1,
-            name: 'windows',
-            status: '已领取',
-            expiration_time: '2025-10-24 12:00',
-            action: 1,
-        },
-    ];
-
     function SoftwareAssetsGridToolbar() {
         return (
             <GridToolbar
@@ -71,8 +103,9 @@ export default function Software() {
     return (
         <Stack direction="column" >
             <SingleChoiceChipFilter
-                choices={softwareChoices}
-                onClick={(choice) => { }} />
+                choices={SOFTWARE_CHOICES}
+                onClick={(choice) => setStatus(choice)}
+                selectedChoice={status} />
             <FilterSearchBar
                 options={SOFTWARE_SEARCH_OPTIONS}
                 default={SOFTWARE_DEFALUT_SEARCH_OPTIONS}
@@ -82,16 +115,16 @@ export default function Software() {
                 slots={{ toolbar: SoftwareAssetsGridToolbar }}
                 paginationModel={paginationModel}
                 onPaginationModelChange={(model) => setPaginationModel(model)}
-                rowCount={rows.length}
+                getRowId={(row) => row.licenseID}
+                rowCount={(licenseData ?? []).length}
                 paginationMode="server"
-                rows={rows}
+                rows={licenseData}
                 sx={{
                     marginLeft: "32px",
                     marginRight: "32px",
                     marginTop: "8px",
                     marginBottom: "8px",
-                }}
-            />
+                }} />
         </Stack>
     );
 }
