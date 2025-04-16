@@ -2,9 +2,6 @@ import { Chip, Stack } from "@mui/material";
 import { useState } from "react";
 
 export default function SingleChoiceChipFilter(props) {
-    const [selectedChoice, setSelectedChoice] = useState(
-        props.choices.find((choice) => choice.isDefault) ?? null
-    );
 
     return <Stack
         direction="row"
@@ -21,10 +18,9 @@ export default function SingleChoiceChipFilter(props) {
                 return <Chip
                     key={choiceIndex}
                     label={choice.name}
-                    variant={selectedChoice == choice ? 'filled' : 'outlined'}
+                    variant={props.selectedChoice == choice ? 'filled' : 'outlined'}
                     color={'primary'}
                     onClick={() => {
-                        setSelectedChoice(choice);
                         props.onClick(choice);
                     }}
                 />;
