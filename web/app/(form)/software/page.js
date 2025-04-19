@@ -5,7 +5,7 @@ import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
 import axiosInstance from "@/app/service/axiosConfig";
 import { Link, Stack } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar, GridToolbarExport } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
 
 
@@ -28,10 +28,6 @@ export default function Software() {
         page: 0,
         pageSize: 25,
     });
-
-    useEffect(() => {
-        fetchData();
-    }, []);
 
     useEffect(() => {
         fetchData();
@@ -70,7 +66,7 @@ export default function Software() {
         {
             field: 'licenseExpiredDate',
             headerName: '过期时间',
-            valueGetter: (value, row) => row.formattedLicenseExpiredDate,
+            valueGetter: (value, row) => row.formattedLicenseExpiwredDate,
             flex: 2,
         },
         {
