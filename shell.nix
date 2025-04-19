@@ -37,7 +37,7 @@ in pkgs.mkShell rec {
   postShellHook = ''
     # allow pip to install wheels
     unset SOURCE_DATE_EPOCH
-    pip install -r requirements.txt
+    pip install -r api/requirements.txt
   '';
 
 }
