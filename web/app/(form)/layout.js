@@ -7,6 +7,10 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import AppsIcon from '@mui/icons-material/Apps';
 import theme from '../styles/theme';
 import SAMPageContainer from '../components/SamPageContainer';
+import { ErrorProvider } from '../context/ErrorProvider';
+import GlobalSnackbar from '../components/GlobalSnackbar';
+import { Suspense } from 'react';
+import { LinearProgress } from '@mui/material';
 
 const NAVIGATION = [
   {
@@ -35,18 +39,23 @@ export default function RootLayout({ children }) {
   return (
     <html lang="zh-cn">
       <body>
-        <AppRouterCacheProvider>
-          <NextAppProvider
-            navigation={NAVIGATION}
-            branding={BRANDING}
-            theme={theme}>
-            <DashboardLayout>
-              <SAMPageContainer>
-                {children}
-              </SAMPageContainer>
-            </DashboardLayout>
-          </NextAppProvider>
-        </AppRouterCacheProvider>
+        <ErrorProvider>
+          <GlobalSnackbar />
+          <AppRouterCacheProvider>
+            <Suspense fallback={<LinearProgress />}>
+              <NextAppProvider
+                navigation={NAVIGATION}
+                branding={BRANDING}
+                theme={theme}>
+                <DashboardLayout>
+                  <SAMPageContainer>
+                    {children}
+                  </SAMPageContainer>
+                </DashboardLayout>
+              </NextAppProvider>
+            </Suspense>
+          </AppRouterCacheProvider>
+        </ErrorProvider>
       </body>
     </html>
   );

@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "cwd": "${workspaceFolder}/web",
+        "type": "node",
+        "request": "launch",
+        "name": "Next.js: Debug (Launch)",
+        "runtimeExecutable": "node",
+        "runtimeArgs": [
+          "--inspect-brk",                        // Enable debugging and break at the first line
+          "node_modules/.bin/next",                 // Use the next.js binary installed locally
+          "dev"                                     // Run the Next.js dev command
+        ],
+        "port": 9229,                               // Default debugging port
+        "console": "integratedTerminal",            // Use VS Code’s terminal
+        "protocol": "inspector",                    // Use the inspector protocol
+        "env": {
+          "NODE_ENV": "development"                 // Set Node environment variable if needed
+        },
+        "skipFiles": [
+          "<node_internals>/**"
+        ]
+      }
+    ]
+  }
+  
