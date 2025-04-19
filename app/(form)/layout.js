@@ -9,6 +9,8 @@ import theme from '../styles/theme';
 import SAMPageContainer from '../components/SamPageContainer';
 import { ErrorProvider } from '../context/ErrorProvider';
 import GlobalSnackbar from '../components/GlobalSnackbar';
+import { Suspense } from 'react';
+import { LinearProgress } from '@mui/material';
 
 const NAVIGATION = [
   {
@@ -40,16 +42,18 @@ export default function RootLayout({ children }) {
         <ErrorProvider>
           <GlobalSnackbar />
           <AppRouterCacheProvider>
-            <NextAppProvider
-              navigation={NAVIGATION}
-              branding={BRANDING}
-              theme={theme}>
-              <DashboardLayout>
-                <SAMPageContainer>
-                  {children}
-                </SAMPageContainer>
-              </DashboardLayout>
-            </NextAppProvider>
+            <Suspense fallback={<LinearProgress />}>
+              <NextAppProvider
+                navigation={NAVIGATION}
+                branding={BRANDING}
+                theme={theme}>
+                <DashboardLayout>
+                  <SAMPageContainer>
+                    {children}
+                  </SAMPageContainer>
+                </DashboardLayout>
+              </NextAppProvider>
+            </Suspense>
           </AppRouterCacheProvider>
         </ErrorProvider>
       </body>
