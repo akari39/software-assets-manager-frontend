@@ -3,7 +3,8 @@ name: Deploy services
 on:
   push:
     branches:
-      - main, dev, amia/dockerfile
+      - amia/dockerfile
+      - dev
 
 jobs:
   deploy:
