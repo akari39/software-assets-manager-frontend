@@ -34,11 +34,11 @@ app.add_middleware(
 )
 
 # 導入並註冊路由
-from .routers.softwareinfo import router as softwareinfo_router
+from routers.softwareinfo import router as softwareinfo_router
 app.include_router(softwareinfo_router)
 
-from .routers.softwarelicense import router as softwarelicense_router
+from routers.softwarelicense import router as softwarelicense_router
 app.include_router(softwarelicense_router)
 
-from .routers.SoftwareLicenseList_With_SoftwareInfo import router as SoftwareLicenseList_With_SoftwareInfo_router
+from routers.SoftwareLicenseList_With_SoftwareInfo import router as SoftwareLicenseList_With_SoftwareInfo_router
 app.include_router(SoftwareLicenseList_With_SoftwareInfo_router)
