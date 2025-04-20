@@ -27,6 +27,23 @@ services:
     networks:
       - app-net
 
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL_DEV: http://localhost:12000
+    restart: always
+    depends_on:
+      - api
+    environment:
+      - NEXT_PUBLIC_API_URL_DEV=http://localhost:12000
+    ports:
+      - "3000:3000"
+    networks:
+      - app-net
+
+
 volumes:
   db_data:
 
