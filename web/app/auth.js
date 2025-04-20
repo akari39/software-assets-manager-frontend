@@ -1,5 +1,4 @@
 import NextAuth from 'next-auth';
-import GitHub from 'next-auth/providers/github';
 
 const providers = [{ id: 'credentials', name: 'Email and Password' }];;
 
