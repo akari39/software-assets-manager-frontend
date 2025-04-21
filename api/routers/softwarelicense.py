@@ -6,9 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, AsyncGenerator, List
 from datetime import date, datetime, timezone # 导入 date 和 datetime
-from ..dependencies import get_session
-from ..models.softwarelicense import SoftwareLicense
-from ..schemas.softwarelicense import SoftwareLicenseCreate, SoftwareLicenseRead, SoftwareLicenseUpdate
+from dependencies import get_session
+from models.softwarelicense import SoftwareLicense
+from schemas.softwarelicense import SoftwareLicenseCreate, SoftwareLicenseRead, SoftwareLicenseUpdate
 
 
 # --------------------------------------------------

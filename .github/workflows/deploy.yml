@@ -1,0 +1,39 @@
+name: Deploy services
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: [self-hosted]
+    environment: production
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Set ENV variables
+        run: |
+          cat <<EOF > .env
+          POSTGRES_USER=${{ vars.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ vars.POSTGRES_DB }}
+          NEXT_PUBLIC_API_URL_DEV=http://192.168.46.4:12000
+          EOF
+
+      - name: View docker、docker-compose versions
+        run: |
+          docker --version
+          docker-compose --version
+
+      - name: Build and run services
+        working-directory: ${{ github.workspace }}
+        run: |
+          docker-compose down --remove-orphans
+          docker-compose build --parallel
+          docker-compose up -d
+
+      - name:
+        run: docker-compose ps
