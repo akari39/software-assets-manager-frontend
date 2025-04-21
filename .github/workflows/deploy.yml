@@ -18,9 +18,9 @@ jobs:
       - name: Set ENV variables
         run: |
           cat <<EOF > .env
-          POSTGRES_USER=${{ env.POSTGRES_USER }}
+          POSTGRES_USER=${{ vars.POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB=${{ env.POSTGRES_DB }}
+          POSTGRES_DB=${{ vars.POSTGRES_DB }}
           NEXT_PUBLIC_API_URL_DEV=http://192.168.46.4:12000
           EOF
 

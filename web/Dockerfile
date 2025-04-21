@@ -20,10 +20,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 
-# ENV NEXTAUTH_SECRET=你的密钥
-# ENV DATABASE_URL=你的数据库 URL
-
 EXPOSE 3000
 
 # 启动命令
-CMD ["npm", "start", "-H", "0.0.0.0", "-p", "3000"]
+CMD ["npm", "start"]
