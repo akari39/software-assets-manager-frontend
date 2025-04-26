@@ -6,7 +6,7 @@ from typing import AsyncGenerator
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     # 假設 engine 在 main.py 中定義並導入
-    from .main import engine # 需要確保可以從main導入engine
+    from main import engine # 需要確保可以從main導入engine
     AsyncSessionLocal = sessionmaker(
         bind=engine,
         class_=AsyncSession,
