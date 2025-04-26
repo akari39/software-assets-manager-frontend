@@ -87,40 +87,6 @@ async def get_licenses_list_manual_join(
     # 6. 返回組合後的列表
     return combined_results
 
-# --- API 端點：根據 ID 獲取單條記錄 (手動組合) ---
-@router.get("/{license_id}", response_model=SoftwareLicenseReadWithInfo)
-async def get_single_license_manual_join(
-    license_id: int,
-    session: AsyncSession = Depends(get_session)
-):
-    """
-    根據 LicenseID 獲取單個軟件授權，然後手動查詢關聯軟件信息並組合返回。
-    """
-    # 1. 查詢 SoftwareLicense
-    license_db = await session.get(SoftwareLicense, license_id)
-    if not license_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Software license with ID {license_id} not found"
-        )
-
-    # 2. 查詢對應的 SoftwareInfo
-    info_read: Optional[SoftwareInfoRead] = None
-    if license_db.SoftwareInfoID is not None:
-        info_db = await session.get(SoftwareInfo, license_db.SoftwareInfoID)
-        if info_db:
-            info_read = SoftwareInfoRead.model_validate(info_db) # 轉換為 Read Schema
-
-    # 3. 組合數據
-    license_read = SoftwareLicenseRead.model_validate(license_db)
-    combined_result = SoftwareLicenseReadWithInfo(
-        **license_read.model_dump(),
-        software_info=info_read
-    )
-
-    # 4. 返回組合結果
-    return combined_result
-
 @router.get("/search", response_model=List[SoftwareLicenseReadWithInfo]) #
 async def search_licenses_with_info(
     # --- 搜索參數 ---
@@ -199,3 +165,38 @@ async def search_licenses_with_info(
 
     # --- 返回組合後的列表 ---
     return combined_results
+
+
+# --- API 端點：根據 ID 獲取單條記錄 (手動組合) ---
+@router.get("/{license_id}", response_model=SoftwareLicenseReadWithInfo)
+async def get_single_license_manual_join(
+    license_id: int,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    根據 LicenseID 獲取單個軟件授權，然後手動查詢關聯軟件信息並組合返回。
+    """
+    # 1. 查詢 SoftwareLicense
+    license_db = await session.get(SoftwareLicense, license_id)
+    if not license_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Software license with ID {license_id} not found"
+        )
+
+    # 2. 查詢對應的 SoftwareInfo
+    info_read: Optional[SoftwareInfoRead] = None
+    if license_db.SoftwareInfoID is not None:
+        info_db = await session.get(SoftwareInfo, license_db.SoftwareInfoID)
+        if info_db:
+            info_read = SoftwareInfoRead.model_validate(info_db) # 轉換為 Read Schema
+
+    # 3. 組合數據
+    license_read = SoftwareLicenseRead.model_validate(license_db)
+    combined_result = SoftwareLicenseReadWithInfo(
+        **license_read.model_dump(),
+        software_info=info_read
+    )
+
+    # 4. 返回組合結果
+    return combined_result
