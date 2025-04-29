@@ -8,7 +8,7 @@ import { Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
 import SoftwareDetailDialog from "./softwareDetail/SoftwareDetailDialog";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 
 const SOFTWARE_SEARCH_OPTIONS = [
