@@ -26,7 +26,6 @@ const SOFTWARE_CHOICES = [
 export default function Software() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
-
     const [licenseData, setLicenseData] = useState(null);
     const [status, setStatus] = useState(SOFTWARE_CHOICES.find((choice) => choice.isDefault) ?? null);
     const [paginationModel, setPaginationModel] = useState({
@@ -42,70 +41,14 @@ export default function Software() {
     }, [status]);
 
     async function fetchData() {
-        // const response = await axiosInstance.get('/licenses_with_info/', {
-        //     params: {
-        //         page: paginationModel.page + 1,
-        //         limit: paginationModel.pageSize,
-        //         status: status.value,
-        //     },
-        // });
-        // const data = response.data;
-        const data = [
-            {
-                SoftwareInfoID: 1,
-                LicenseType: "Single User",
-                LicenseStatus: 0,
-                LicenseKey: "PS-1234-ABCD",
-                LicenseExpiredDate: "2025-10-01T00:00:00Z",
-                LvLimit: 1,
-                Remark: "Primary user license",
-                LicenseID: 1,
-                CreateTime: "2024-01-15T08:30:00Z",
-                LastUpdateTime: "2024-06-20T14:45:00Z",
-                software_info: {
-                    SoftwareInfoName: "Adobe Photoshop",
-                    SoftwareInfoType: "Design",
-                    SoftwareInfoMatchRule: "Exact Match",
-                    SoftwareInfoID: 1,
-                },
+        const response = await axiosInstance.get('/licenses_with_info/', {
+            params: {
+                page: paginationModel.page + 1,
+                limit: paginationModel.pageSize,
+                status: status.value,
             },
-            {
-                SoftwareInfoID: 2,
-                LicenseType: "Enterprise",
-                LicenseStatus: 1,
-                LicenseKey: "VS-5678-EFGH",
-                LicenseExpiredDate: null,
-                LvLimit: 50,
-                Remark: "",
-                LicenseID: 2,
-                CreateTime: "2023-11-01T09:00:00Z",
-                LastUpdateTime: "2024-05-10T11:20:00Z",
-                software_info: {
-                    SoftwareInfoName: "Visual Studio Enterprise",
-                    SoftwareInfoType: "Development",
-                    SoftwareInfoMatchRule: "Wildcard",
-                    SoftwareInfoID: 2,
-                },
-            },
-            {
-                SoftwareInfoID: 3,
-                LicenseType: "Team",
-                LicenseStatus: 0,
-                LicenseKey: "SL-9012-IJKL",
-                LicenseExpiredDate: "2024-12-31T23:59:59Z",
-                LvLimit: 10,
-                Remark: "Yearly subscription",
-                LicenseID: 3,
-                CreateTime: "2023-07-10T15:45:00Z",
-                LastUpdateTime: "2024-07-01T10:10:00Z",
-                software_info: {
-                    SoftwareInfoName: "Slack",
-                    SoftwareInfoType: "Communication",
-                    SoftwareInfoMatchRule: "Partial Match",
-                    SoftwareInfoID: 3,
-                },
-            },
-        ];
+        });
+        const data = response.data;
         setLicenseData(SoftwareLicense.fromArray(data));
     }
 
