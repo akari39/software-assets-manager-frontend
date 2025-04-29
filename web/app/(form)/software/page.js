@@ -7,6 +7,8 @@ import axiosInstance from "@/app/service/axiosConfig";
 import { Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
+import SoftwareDetailDialog from "./softwareDetail/SoftwareDetailDialog";
+import { usePathname, useSearchParams } from "next/navigation";
 
 
 const SOFTWARE_SEARCH_OPTIONS = [
@@ -22,28 +24,103 @@ const SOFTWARE_CHOICES = [
 ];
 
 export default function Software() {
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
     const [licenseData, setLicenseData] = useState(null);
     const [status, setStatus] = useState(SOFTWARE_CHOICES.find((choice) => choice.isDefault) ?? null);
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 25,
     });
+    const detailId = pathname.endsWith('/softwareDetail')
+        ? searchParams.get('id')
+        : null;
 
     useEffect(() => {
         fetchData();
     }, [status]);
 
     async function fetchData() {
-        const response = await axiosInstance.get('/licenses_with_info/', {
-            params: {
-                page: paginationModel.page + 1,
-                limit: paginationModel.pageSize,
-                status: status.value,
+        // const response = await axiosInstance.get('/licenses_with_info/', {
+        //     params: {
+        //         page: paginationModel.page + 1,
+        //         limit: paginationModel.pageSize,
+        //         status: status.value,
+        //     },
+        // });
+        // const data = response.data;
+        const data = [
+            {
+                SoftwareInfoID: 1,
+                LicenseType: "Single User",
+                LicenseStatus: 0,
+                LicenseKey: "PS-1234-ABCD",
+                LicenseExpiredDate: "2025-10-01T00:00:00Z",
+                LvLimit: 1,
+                Remark: "Primary user license",
+                LicenseID: 1,
+                CreateTime: "2024-01-15T08:30:00Z",
+                LastUpdateTime: "2024-06-20T14:45:00Z",
+                software_info: {
+                    SoftwareInfoName: "Adobe Photoshop",
+                    SoftwareInfoType: "Design",
+                    SoftwareInfoMatchRule: "Exact Match",
+                    SoftwareInfoID: 1,
+                },
             },
-        });
-        const data = response.data;
+            {
+                SoftwareInfoID: 2,
+                LicenseType: "Enterprise",
+                LicenseStatus: 1,
+                LicenseKey: "VS-5678-EFGH",
+                LicenseExpiredDate: null,
+                LvLimit: 50,
+                Remark: "",
+                LicenseID: 2,
+                CreateTime: "2023-11-01T09:00:00Z",
+                LastUpdateTime: "2024-05-10T11:20:00Z",
+                software_info: {
+                    SoftwareInfoName: "Visual Studio Enterprise",
+                    SoftwareInfoType: "Development",
+                    SoftwareInfoMatchRule: "Wildcard",
+                    SoftwareInfoID: 2,
+                },
+            },
+            {
+                SoftwareInfoID: 3,
+                LicenseType: "Team",
+                LicenseStatus: 0,
+                LicenseKey: "SL-9012-IJKL",
+                LicenseExpiredDate: "2024-12-31T23:59:59Z",
+                LvLimit: 10,
+                Remark: "Yearly subscription",
+                LicenseID: 3,
+                CreateTime: "2023-07-10T15:45:00Z",
+                LastUpdateTime: "2024-07-01T10:10:00Z",
+                software_info: {
+                    SoftwareInfoName: "Slack",
+                    SoftwareInfoType: "Communication",
+                    SoftwareInfoMatchRule: "Partial Match",
+                    SoftwareInfoID: 3,
+                },
+            },
+        ];
         setLicenseData(SoftwareLicense.fromArray(data));
     }
+
+    // 点击「详情」时调用，给当前 URL 加上 ?softwareDetail=xxx
+    const openDetail = (id) => {
+        window.history.pushState(
+            null,
+            '',
+            `${window.location.pathname}/softwareDetail?id=${id}`
+        );
+    };
+
+    const closeDetail = () => {
+        window.history.pushState(null, '', '/software');
+    };
 
     const columns = useMemo(() => [
         {
@@ -76,9 +153,9 @@ export default function Software() {
             flex: 1,
             getActions: (params) => [
                 <GridActionsCellItem
-                    icon={<Link>查看详情</Link>}
-                    label="查看详情"
-                    onClick={() => { }}
+                    icon={<Link>详情</Link>}
+                    label="详情"
+                    onClick={() => openDetail(params.row.licenseID)}
                     showInMenu={false}
                     disableRipple
                 />
@@ -121,6 +198,13 @@ export default function Software() {
                     marginTop: "8px",
                     marginBottom: "8px",
                 }} />
+            <SoftwareDetailDialog
+                open={detailId ?? false}
+                onClose={closeDetail}
+                softwareDetail={detailId
+                    ? licenseData?.find(r => String(r.licenseID) === detailId) ?? null
+                    : null}
+            />
         </Stack>
     );
 }

@@ -37,7 +37,7 @@ export default function FilterSearchBar(props) {
                     onChange={props.onSearchChange ?? (() => { })}
                 />
             </FormControl>
-            <Button variant="contained" onClick={props.onSearch}>搜索</Button>
+            <Button variant="contained" disableElevation onClick={props.onSearch}>搜索</Button>
         </Stack>
     </Stack>
 }
