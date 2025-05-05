@@ -35,7 +35,7 @@ async def create_user(
     # 2. Check if User already exists for this employee_id (using select)
     # (Alternatively, rely on unique constraint in DB, caught by IntegrityError)
     query = select(User).where(User.employee_id == user_in.employee_id)
-    existing_user_check = await session.exec(query)
+    existing_user_check = await session.execute(query)
     if existing_user_check.first():
          raise HTTPException(
              status_code=status.HTTP_409_CONFLICT,
