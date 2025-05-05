@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, AsyncGenerator
-from models.softwareinfo import SoftwareInfo
-from schemas.softwareinfo import SoftwareInfoCreate, SoftwareInfoRead,SoftwareInfoUpdate
-from dependencies import get_session
+from ..models.softwareinfo import SoftwareInfo
+from ..schemas.softwareinfo import SoftwareInfoCreate, SoftwareInfoRead,SoftwareInfoUpdate
+from ..dependencies import get_session
 
 
 # 創建路由實例
