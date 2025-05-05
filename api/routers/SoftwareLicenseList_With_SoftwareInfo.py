@@ -7,13 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Dict
 
 # --- 導入依賴、模型和 Schema ---
-from dependencies import get_session
-from models.softwarelicense import SoftwareLicense
-from models.softwareinfo import SoftwareInfo
+from ..dependencies import get_session
+from ..models.softwarelicense import SoftwareLicense
+from ..models.softwareinfo import SoftwareInfo
 # 導入基礎讀取 Schema 和新的組合 Schema
-from schemas.softwarelicense import SoftwareLicenseRead
-from schemas.softwareinfo import SoftwareInfoRead
-from schemas.SoftwareLicenseList_With_SoftwareInfo import SoftwareLicenseReadWithInfo
+from ..schemas.softwarelicense import SoftwareLicenseRead
+from ..schemas.softwareinfo import SoftwareInfoRead
+from ..schemas.SoftwareLicenseList_With_SoftwareInfo import SoftwareLicenseReadWithInfo
 # --------------------------------
 
 # 創建新的路由實例

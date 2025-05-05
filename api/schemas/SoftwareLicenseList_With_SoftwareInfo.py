@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Optional
 
 # 導入基礎讀取模型
-from schemas.softwarelicense import SoftwareLicenseRead
-from schemas.softwareinfo import SoftwareInfoRead
+from .softwarelicense import SoftwareLicenseRead
+from .softwareinfo import SoftwareInfoRead
 
 # 定義組合 Schema
 class SoftwareLicenseReadWithInfo(SoftwareLicenseRead):

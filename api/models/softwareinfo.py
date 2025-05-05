@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
-from schemas.softwareinfo import SoftwareInfoBase
+from ..schemas.softwareinfo import SoftwareInfoBase
 
 class SoftwareInfo(SoftwareInfoBase, table=True):
     __tablename__ = "software_info" 
