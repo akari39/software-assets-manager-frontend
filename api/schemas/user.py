@@ -15,5 +15,6 @@ class UserRead(UserBase):
 # Schema for updating user data (e.g., status or password)
 class UserUpdate(SQLModel):
     status: Optional[int] = None
+    permissions: Optional[int] = None
     password: Optional[str] = None # Allow updating password
     # employee_id is generally not updated once set.
