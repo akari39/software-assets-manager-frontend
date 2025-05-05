@@ -12,7 +12,12 @@ class EmployeeBase(SQLModel):
 
 class Employee(EmployeeBase, table=True):
     # 将 employee_id 作为主键，通常工号是唯一的字符串
-    employee_id: str = Field(default=None, primary_key=True, index=True, unique=True, description="僱員工號")
+    employee_id: str = Field(
+        default=None,
+        primary_key=True,
+        index=True,
+        unique=True,
+        description="僱員工號")
 
     # Optional: Define the one-to-one relationship back to User
     # If an employee MUST have a user account, remove Optional.
