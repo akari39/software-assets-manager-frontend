@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 class UserBase(SQLModel):
     employee_id: str = Field(
-        foreign_key="employee.employee_id",
         index=True,
         unique=True, # Ensure one user per employee
         description="关联的员工工号"
@@ -27,9 +26,5 @@ class User(UserBase, table=True):
     # --- End New Primary Key ---
 
     hashed_password: str = Field()
-
-    # Define the one-to-one relationship to Employee
-    # The relationship still works based on the foreign key employee_id
-    employee: "Employee" = Relationship(back_populates="user")
 
     __tablename__ = "users" # Explicit table name
