@@ -5,7 +5,7 @@ from sqlmodel import SQLModel, Field, Relationship
 
 # Import Employee only for type checking
 if TYPE_CHECKING:
-    from .employee import Employee
+    from employee import Employee
 
 class UserBase(SQLModel):
     # employee_id is defined in the main User class as it's the PK/FK

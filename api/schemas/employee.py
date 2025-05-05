@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlmodel import SQLModel
-from ..models.employee import EmployeeBase
+from models.employee import EmployeeBase
 
 # Schema for creating an employee (usually doesn't include the ID if it's generated)
 # Since employee_id is the primary key AND provided externally (工号), include it here.

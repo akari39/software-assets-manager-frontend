@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError # To catch unique constraint violations
 from typing import List, Optional
 
-from ..dependencies import get_session # Assuming get_session is in dependencies.py
-from ..models.employee import Employee
-from ..schemas.employee import EmployeeCreate, EmployeeRead, EmployeeUpdate
+from dependencies import get_session # Assuming get_session is in dependencies.py
+from models.employee import Employee
+from schemas.employee import EmployeeCreate, EmployeeRead, EmployeeUpdate
 
 
 router = APIRouter(

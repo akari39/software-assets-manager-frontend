@@ -1,7 +1,7 @@
 from sqlmodel import select, SQLModel, Field # 使用 SQLModel
 from typing import Optional
 from datetime import date, datetime, timezone # 导入 date 和 datetime
-from ..models.softwarelicense import SoftwareLicenseBase
+from models.softwarelicense import SoftwareLicenseBase
 
 # --------------------------------------------------
 # 2. 請求/響應模型 (Pydantic Schemas based on SQLModel)
