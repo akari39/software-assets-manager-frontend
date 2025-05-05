@@ -13,7 +13,11 @@ class UserBase(SQLModel):
         unique=True, # Ensure one user per employee
         description="关联的员工工号"
     )
-    status: int = Field(default=0, index=True) # 用户状态 (例如: 0: 激活, 1: 禁用)
+    permissions: int = Field(default=0) # 用户權限 (例如: 0: 用戶, 1: 管理員)
+    status: int = Field(
+        default=0,
+        index=True
+        ) # 用户状态 (例如: 0: 激活, 1: 禁用)
 
 class User(UserBase, table=True):
     # --- New Primary Key ---

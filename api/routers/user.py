@@ -72,6 +72,7 @@ async def create_user(
 @router.get("/", response_model=List[UserRead])
 async def read_users(
     status_filter: Optional[int] = Query(None, alias="status", description="按用户状态筛选 (例如: 0=激活, 1=禁用)"),
+    permissions_filter: Optional[int] = Query(None, alias="permissions", description="按用户權限筛选 (例如: 0=用戶, 1=管理員)"),
     page: int = Query(1, ge=1, description="页码"),
     limit: int = Query(100, ge=1, le=200, description="每页数量"),
     session: AsyncSession = Depends(get_session)
@@ -84,6 +85,9 @@ async def read_users(
 
     if status_filter is not None:
         query = query.where(User.status == status_filter)
+
+    if permissions_filter is not None:
+        query = query.where(User.permissions == permissions_filter)
 
     result = await session.execute(
         query.offset(offset).limit(limit).order_by(User.user_id) # Order by new PK
