@@ -7,6 +7,8 @@ import axiosInstance from "@/app/service/axiosConfig";
 import { Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
+import SoftwareDetailDialog from "./softwareDetail/SoftwareDetailDialog";
+import { usePathname, useSearchParams } from "next/navigation";
 
 
 const SOFTWARE_SEARCH_OPTIONS = [
@@ -22,12 +24,17 @@ const SOFTWARE_CHOICES = [
 ];
 
 export default function Software() {
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [licenseData, setLicenseData] = useState(null);
     const [status, setStatus] = useState(SOFTWARE_CHOICES.find((choice) => choice.isDefault) ?? null);
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 25,
     });
+    const detailId = pathname.endsWith('/softwareDetail')
+        ? searchParams.get('id')
+        : null;
 
     useEffect(() => {
         fetchData();
@@ -44,6 +51,19 @@ export default function Software() {
         const data = response.data;
         setLicenseData(SoftwareLicense.fromArray(data));
     }
+
+    // 点击「详情」时调用，给当前 URL 加上 ?softwareDetail=xxx
+    const openDetail = (id) => {
+        window.history.pushState(
+            null,
+            '',
+            `${window.location.pathname}/softwareDetail?id=${id}`
+        );
+    };
+
+    const closeDetail = () => {
+        window.history.pushState(null, '', '/software');
+    };
 
     const columns = useMemo(() => [
         {
@@ -76,9 +96,9 @@ export default function Software() {
             flex: 1,
             getActions: (params) => [
                 <GridActionsCellItem
-                    icon={<Link>查看详情</Link>}
-                    label="查看详情"
-                    onClick={() => { }}
+                    icon={<Link>详情</Link>}
+                    label="详情"
+                    onClick={() => openDetail(params.row.licenseID)}
                     showInMenu={false}
                     disableRipple
                 />
@@ -121,6 +141,13 @@ export default function Software() {
                     marginTop: "8px",
                     marginBottom: "8px",
                 }} />
+            <SoftwareDetailDialog
+                open={detailId ?? false}
+                onClose={closeDetail}
+                softwareDetail={detailId
+                    ? licenseData?.find(r => String(r.licenseID) === detailId) ?? null
+                    : null}
+            />
         </Stack>
     );
 }
