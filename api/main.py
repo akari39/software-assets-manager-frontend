@@ -42,3 +42,6 @@ app.include_router(softwarelicense_router)
 
 from routers.SoftwareLicenseList_With_SoftwareInfo import router as SoftwareLicenseList_With_SoftwareInfo_router
 app.include_router(SoftwareLicenseList_With_SoftwareInfo_router)
+
+from routers.employee import router as employee
+app.include_router(employee)
