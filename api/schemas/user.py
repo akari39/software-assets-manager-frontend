@@ -1,7 +1,7 @@
 # /schemas/user.py
 from typing import Optional
 from sqlmodel import SQLModel
-from ..models.user import UserBase # Now includes employee_id
+from models.user import UserBase # Now includes employee_id
 
 # Schema for creating a user - requires employee_id and plain password
 # Inherits employee_id from UserBase now

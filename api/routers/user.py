@@ -5,11 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError # To catch FK violations or PK duplicates
 from typing import List, Optional
 
-from ..dependencies import get_session #
-from ..models.user import User
-from ..models.employee import Employee # Need Employee to check if employee_id exists
-from ..schemas.user import UserCreate, UserRead, UserUpdate
-from ..utils.security import get_password_hash, verify_password # Import security utils
+from dependencies import get_session #
+from models.user import User
+from models.employee import Employee # Need Employee to check if employee_id exists
+from schemas.user import UserCreate, UserRead, UserUpdate
+from security import get_password_hash, verify_password # Import security utils
 
 router = APIRouter(
     prefix="/users",
@@ -34,13 +34,13 @@ async def create_user(
 
     # 2. Check if User already exists for this employee_id (using select)
     # (Alternatively, rely on unique constraint in DB, caught by IntegrityError)
-    # query = select(User).where(User.employee_id == user_in.employee_id)
-    # existing_user_check = await session.exec(query)
-    # if existing_user_check.first():
-    #     raise HTTPException(
-    #         status_code=status.HTTP_409_CONFLICT,
-    #         detail=f"User account for employee ID '{user_in.employee_id}' already exists."
-    #     )
+    query = select(User).where(User.employee_id == user_in.employee_id)
+    existing_user_check = await session.exec(query)
+    if existing_user_check.first():
+         raise HTTPException(
+             status_code=status.HTTP_409_CONFLICT,
+             detail=f"User account for employee ID '{user_in.employee_id}' already exists."
+         )
 
     # 3. Hash the password
     hashed_password = get_password_hash(user_in.password)
