@@ -45,13 +45,13 @@ services:
     networks:
       - app-net
 
-    adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:3001
-    networks:
-      - app-net
+  adminer:
+  image: adminer
+  restart: always
+  ports:
+    - 8080:3001
+  networks:
+    - app-net
 
 
 volumes:
