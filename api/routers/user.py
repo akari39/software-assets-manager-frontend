@@ -9,7 +9,7 @@ from dependencies import get_session #
 from models.user import User
 from models.employee import Employee # Need Employee to check if employee_id exists
 from schemas.user import UserCreate, UserRead, UserUpdate
-from security import get_password_hash, verify_password # Import security utils
+from utils.PwdHash import get_password_hash, verify_password # Import security utils
 
 router = APIRouter(
     prefix="/users",
