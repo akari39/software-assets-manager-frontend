@@ -6,6 +6,7 @@ from utils.jwt import create_access_token, verify_password
 from models.user import User
 from dependencies import get_session
 from pydantic import BaseModel
+from utils.jwt import get_current_user, get_current_active_user, get_current_admin
 
 router = APIRouter()
 
@@ -29,3 +30,7 @@ async def login(
 
     access_token = create_access_token(data={"sub": str(user.user_id)})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me")
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user

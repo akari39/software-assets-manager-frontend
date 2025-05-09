@@ -48,3 +48,6 @@ app.include_router(employee)
 
 from routers.user import router as user
 app.include_router(user)
+
+from routers.auth import router as auth
+app.include_router(auth)
