@@ -2,3 +2,5 @@ fastapi[standard]
 sqlmodel
 asyncpg
 passlib
+python-jose
+python-multipart
