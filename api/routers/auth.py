@@ -6,7 +6,7 @@ from utils.jwt import create_access_token, verify_password
 from models.user import User
 from dependencies import get_session
 from pydantic import BaseModel
-from utils.jwt import get_current_user, get_current_active_user, get_current_admin
+from utils.jwt import get_current_user
 
 router = APIRouter()
 
