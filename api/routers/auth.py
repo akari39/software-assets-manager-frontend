@@ -10,7 +10,9 @@ from utils.jwt import get_current_user
 from utils.PwdHash import get_password_hash
 
 # 创建一个API路由实例
-router = APIRouter()
+router = APIRouter(
+    tags= ["Auth"]
+)
 
 # 定义登录请求的数据模型
 class LoginRequest(BaseModel):
