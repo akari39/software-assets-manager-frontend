@@ -49,7 +49,7 @@ async def read_licenses(
     获取软件授权记录列表，支持分页和筛选。
     """
     offset = (page - 1) * limit
-    query = select(SoftwareLicense)
+    query = select(SoftwareLicense).options(selectinload(SoftwareLicense.software_info), selectinload(SoftwareLicense.usage_records.user_id))
 
     # 应用筛选条件
     if license_type is not None:

@@ -3,6 +3,8 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import TIMESTAMP
+#from models.softwareinfo import SoftwareInfo
+#from models.licenses_usage_record import LicensesUsageRecord
 
 
 if TYPE_CHECKING:
@@ -45,7 +47,7 @@ class SoftwareLicense(SoftwareLicenseBase, table=True):
         sa_type=TIMESTAMP(timezone=True)
     )
 
-    software_info: SoftwareInfo = Relationship(
+    software_info: "SoftwareInfo" = Relationship(
         back_populates="software_license",
         sa_relationship_kwargs={
             "lazy": "selectin"

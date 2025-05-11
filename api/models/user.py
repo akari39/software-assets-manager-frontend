@@ -34,14 +34,9 @@ class User(UserBase, table=True):
 
     __tablename__ = "users" # Explicit table name
 
-    employee: Employee = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={
-            "lazy": "selectin"
-        }
-    )
+    employee: Optional["Employee"] = Relationship(back_populates="user")
 
-    licenses_usage_record:  list["LicensesUsageRecord"] = Relationship(
+    licenses_usage_record: list["LicensesUsageRecord"] = Relationship(
         back_populates="user_id",
         sa_relationship_kwargs={
             "lazy": "selectin"

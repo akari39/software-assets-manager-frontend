@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import select, SQLModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, selectinload
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, AsyncGenerator
 from models.softwareinfo import SoftwareInfo

@@ -2,6 +2,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 from sqlmodel import TIMESTAMP, Relationship, SQLModel, Field
 from datetime import datetime, timezone
+from sqlalchemy.orm import Mapped
+#from models.softwarelicense import SoftwareLicense
+#from models.user  import User
 
 if TYPE_CHECKING:
     from models.softwarelicense import SoftwareLicense
@@ -55,14 +58,14 @@ class LicensesUsageRecord(LicensesUsageRecordBase, table=True):
     )
     __tablename__ = "licenses_usage_record"
 
-    software_license: SoftwareLicense = Relationship(
+    software_license: "SoftwareLicense" = Relationship(
         back_populates="licenses_usage_record",
         sa_relationship_kwargs={
             "lazy": "selectin"
         }
     )
 
-    user_id: User = Relationship(
+    user_id: "User" = Relationship(
         back_populates="licenses_usage_record",
         sa_relationship_kwargs={
             "lazy": "selectin"

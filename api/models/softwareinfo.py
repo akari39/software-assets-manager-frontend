@@ -1,6 +1,7 @@
 from sqlmodel import Relationship, SQLModel, Field
 from typing import TYPE_CHECKING, Optional
 from schemas.softwareinfo import SoftwareInfoBase
+#from models.softwarelicense import SoftwareLicense
 
 if TYPE_CHECKING:
     from models.softwarelicense import SoftwareLicense

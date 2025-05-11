@@ -21,17 +21,9 @@ class Employee(EmployeeBase, table=True):
         unique=True,
         description="僱員工號")
 
-    # Optional: Define the one-to-one relationship back to User
-    # If an employee MUST have a user account, remove Optional.
-    # If not all employees have user accounts, keep Optional.
-    #user: Optional["User"] = Relationship(back_populates="employee")
-
-    # Optional: Add a specific table name if needed
     __tablename__ = "employees"
 
     user: Optional["User"] = Relationship(
-        back_populates="employee",
-        sa_relationship_kwargs={
-            "lazy": "selectin"
-        }
+        back_populates="employee", # 指向 User.employee
+        sa_relationship_kwargs={"lazy": "selectin"}
     )
