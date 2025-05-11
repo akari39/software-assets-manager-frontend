@@ -51,3 +51,6 @@ app.include_router(user)
 
 from routers.auth import router as auth
 app.include_router(auth)
+
+from routers.licenses_usage_record import router as licenses_usage_record
+app.include_router(licenses_usage_record)

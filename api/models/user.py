@@ -1,5 +1,4 @@
 from __future__ import annotations # For forward references in type hints
-
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 
@@ -43,7 +42,7 @@ class User(UserBase, table=True):
     )
 
     licenses_usage_record:  list["LicensesUsageRecord"] = Relationship(
-        back_populates="user",
+        back_populates="user_id",
         sa_relationship_kwargs={
             "lazy": "selectin"
         }

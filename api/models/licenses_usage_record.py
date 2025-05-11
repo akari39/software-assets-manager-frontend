@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 from sqlmodel import TIMESTAMP, Relationship, SQLModel, Field
 from datetime import datetime, timezone

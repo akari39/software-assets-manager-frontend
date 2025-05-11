@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import select, SQLModel, Field # 使用 SQLModel
+from sqlmodel import select # 使用 SQLModel
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, AsyncGenerator, List
 from datetime import date, datetime, timezone # 导入 date 和 datetime
@@ -10,19 +10,10 @@ from dependencies import get_session
 from models.softwarelicense import SoftwareLicense
 from schemas.softwarelicense import SoftwareLicenseCreate, SoftwareLicenseRead, SoftwareLicenseUpdate
 
-
-# --------------------------------------------------
-# 3. 創建路由實例
-# --------------------------------------------------
 router = APIRouter(
     prefix="/softwarelicense",  # 路由前缀
     tags=["Software License"] # API文档标签
 )
-
-
-# --------------------------------------------------
-# 5. 路由處理函數 (CRUD Operations)
-# --------------------------------------------------
 
 @router.post("/", response_model=SoftwareLicenseRead, status_code=status.HTTP_201_CREATED)
 async def create_license(
@@ -83,6 +74,7 @@ async def read_license(
     """
     根据ID获取单条软件授权记录。
     """
+
     # 使用 session.get 高效获取主键对应的记录
     db_license = await session.get(SoftwareLicense, license_id)
     if not db_license:
