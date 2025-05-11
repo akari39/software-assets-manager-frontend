@@ -4,7 +4,6 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError # To catch FK violations or PK duplicates
 from typing import List, Optional
-
 from dependencies import get_session #
 from models.user import User
 from models.employee import Employee # Need Employee to check if employee_id exists

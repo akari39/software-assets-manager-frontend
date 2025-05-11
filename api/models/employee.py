@@ -1,7 +1,9 @@
 from __future__ import annotations # For forward references in type hints
+from typing import TYPE_CHECKING, Optional
+from sqlmodel import Relationship, SQLModel, Field
 
-from typing import Optional
-from sqlmodel import SQLModel, Field
+if TYPE_CHECKING:
+    from models.user import User
 
 class EmployeeBase(SQLModel):
     name: str = Field(index=True)
@@ -26,3 +28,10 @@ class Employee(EmployeeBase, table=True):
 
     # Optional: Add a specific table name if needed
     __tablename__ = "employees"
+
+    user: Optional["User"] = Relationship(
+        back_populates="employee",
+        sa_relationship_kwargs={
+            "lazy": "selectin"
+        }
+    )

@@ -7,6 +7,7 @@ from typing import Optional, AsyncGenerator
 from models.softwareinfo import SoftwareInfo
 from schemas.softwareinfo import SoftwareInfoCreate, SoftwareInfoRead,SoftwareInfoUpdate
 from dependencies import get_session
+from utils.jwt import get_current_user, get_current_admin
 
 
 # 創建路由實例
@@ -93,7 +94,7 @@ async def update_softwareinfo(
     await session.refresh(db_softwareinfo)
     return db_softwareinfo
 
-@router.delete("/{softwareinfo_id}", status_code = status.HTTP_204_NO_CONTENT)
+@router.delete("/{softwareinfo_id}", status_code = status.HTTP_204_NO_CONTENT, dependencies=[Depends(get_current_admin)])
 async def delete_softwareinfo(
     softwareinfo_id: int,
     session: AsyncSession = Depends(get_session)

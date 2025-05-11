@@ -6,7 +6,8 @@ from sqlalchemy import TIMESTAMP
 
 
 if TYPE_CHECKING:
-    from .softwareinfo import SoftwareInfo
+    from models.softwareinfo import SoftwareInfo
+    from models.licenses_usage_record import LicensesUsageRecord
 # --------------------------------------------------
 # 1. 定義數據模型 (SQLModel) - 反映數據庫表結構
 # --------------------------------------------------
@@ -15,6 +16,7 @@ class SoftwareLicenseBase(SQLModel):
     # Field descriptions are added for clarity
     SoftwareInfoID: int = Field(
         foreign_key="software_info.SoftwareInfoID", 
+        index=True,
         description="关联的软件信息ID")
     LicenseType: int = Field(description="授权模式 (例如: 永久, 订阅-用户)")
     LicenseStatus: int = Field(default="0", description="当前状态 (例如: 可用, 已分配)")
@@ -31,7 +33,7 @@ class SoftwareLicenseBase(SQLModel):
 
 class SoftwareLicense(SoftwareLicenseBase, table=True):
     # 指定表名
-    __tablename__ = "License"
+    __tablename__ = "software_license"
     # 定义主键
     LicenseID: Optional[int] = Field(default=None, primary_key=True)
     # 如果数据库自动管理时间戳，可以在这里定义，但通常设为 read-only
@@ -45,4 +47,18 @@ class SoftwareLicense(SoftwareLicenseBase, table=True):
         default=None,
         description="记录最后更新时间 (由应用代码管理)",
         sa_type=TIMESTAMP(timezone=True)
+    )
+
+    software_info: SoftwareInfo = Relationship(
+        back_populates="software_license",
+        sa_relationship_kwargs={
+            "lazy": "selectin"
+        }
+        )
+    
+    usage_records: list["LicensesUsageRecord"] = Relationship(
+        back_populates="software_license",
+        sa_relationship_kwargs={
+            "lazy": "selectin"
+        }
     )

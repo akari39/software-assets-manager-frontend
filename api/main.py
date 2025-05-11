@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 # 數據庫配置 (僅保留在main.py)
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:huiji.233@localhost:5432/dev"
+    "postgresql+asyncpg://postgres:huiji.233@localhost:5433/dev"
 )
 engine = create_async_engine(DATABASE_URL, echo=True)
 

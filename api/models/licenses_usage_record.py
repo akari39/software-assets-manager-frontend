@@ -1,5 +1,10 @@
-from sqlmodel import SQLModel, Field
-from datetime import datetime
+from typing import TYPE_CHECKING, Optional
+from sqlmodel import TIMESTAMP, Relationship, SQLModel, Field
+from datetime import datetime, timezone
+
+if TYPE_CHECKING:
+    from models.softwarelicense import SoftwareLicense
+    from models.user  import User
 
 class LicensesUsageRecordBase(SQLModel):
     LicenseID: int = Field(
@@ -7,13 +12,13 @@ class LicensesUsageRecordBase(SQLModel):
         index=True,
         description="关联的LicenseID")
 
-    IsActiveRecord: int = Field(
-        default=0,
-        description="是否为当前记录"
+    is_expired: bool = Field(
+        default=None,
+        description="是否已过期"
     )
     
     UserID: int = Field(
-        foreign_key="user.user_id", 
+        foreign_key="users.user_id", 
         index=True,
         description="关联的UserID")
 
@@ -40,7 +45,7 @@ class LicensesUsageRecordBase(SQLModel):
         sa_type=TIMESTAMP(timezone=True)
     )
 
-class LicensesUsageRecord(LicensesUsageRecordBase, table=True)
+class LicensesUsageRecord(LicensesUsageRecordBase, table=True):
     RecordID: Optional[int] = Field(
         default=None,
         primary_key=True,
@@ -48,3 +53,18 @@ class LicensesUsageRecord(LicensesUsageRecordBase, table=True)
         description="独立的领用记录ID"
     )
     __tablename__ = "licenses_usage_record"
+
+    software_license: SoftwareLicense = Relationship(
+        back_populates="licenses_usage_record",
+        sa_relationship_kwargs={
+            "lazy": "selectin"
+        }
+    )
+
+    user_id: User = Relationship(
+        back_populates="licenses_usage_record",
+        sa_relationship_kwargs={
+            "lazy": "selectin"
+        }
+    )
+

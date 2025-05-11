@@ -5,12 +5,14 @@ from sqlmodel import SQLModel, Field, Relationship
 
 # Import Employee only for type checking
 if TYPE_CHECKING:
-    from employee import Employee
+    from models.employee import Employee
+    from models.licenses_usage_record import LicensesUsageRecord
 
 class UserBase(SQLModel):
     employee_id: str = Field(
         index=True,
         unique=True, # Ensure one user per employee
+        foreign_key="employees.employee_id",
         description="关联的员工工号"
     )
     permissions: int = Field(default=0) # 用户權限 (例如: 0: 用戶, 1: 管理員)
@@ -32,3 +34,17 @@ class User(UserBase, table=True):
     hashed_password: str = Field()
 
     __tablename__ = "users" # Explicit table name
+
+    employee: Employee = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={
+            "lazy": "selectin"
+        }
+    )
+
+    licenses_usage_record:  list["LicensesUsageRecord"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={
+            "lazy": "selectin"
+        }
+    )
