@@ -1,15 +1,15 @@
-# /routers/user.py
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError # To catch FK violations or PK duplicates
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
-from dependencies import get_session #
+from dependencies import get_session
 from models.user import User
-from models.employee import Employee # Need Employee to check if employee_id exists
+from models.employee import Employee
 from schemas.user import UserCreate, UserRead, UserUpdate
-from utils.PwdHash import get_password_hash, verify_password # Import security utils
+from utils.PwdHash import get_password_hash, verify_password
 
+# 创建一个API路由实例，前缀为 "/users"，标签为 "Users"
 router = APIRouter(
     prefix="/users",
     tags=["Users"]
@@ -21,9 +21,16 @@ async def create_user(
     session: AsyncSession = Depends(get_session)
 ):
     """
-    创建新用户（关联到现有员工）。
+    创建新用户。
+    
+    参数:
+        user_in (UserCreate): 用户创建请求体。
+        session (AsyncSession): 数据库会话。
+
+    返回:
+        UserRead: 创建成功的用户信息。
     """
-    # 1. Check if Employee exists
+    # 根据提供的 employee_id 查询员工是否存在
     employee = await session.get(Employee, user_in.employee_id)
     if not employee:
         raise HTTPException(
@@ -31,8 +38,7 @@ async def create_user(
             detail=f"Employee with ID '{user_in.employee_id}' not found. Cannot create user."
         )
 
-    # 2. Check if User already exists for this employee_id (using select)
-    # (Alternatively, rely on unique constraint in DB, caught by IntegrityError)
+    # 检查是否已经存在相同 employee_id 的用户
     query = select(User).where(User.employee_id == user_in.employee_id)
     existing_user_check = await session.execute(query)
     if existing_user_check.first():
@@ -41,28 +47,27 @@ async def create_user(
              detail=f"User account for employee ID '{user_in.employee_id}' already exists."
          )
 
-    # 3. Hash the password
+    # 对密码进行哈希处理
     hashed_password = get_password_hash(user_in.password)
 
-    # 4. Create User object
+    # 构建用户数据并排除密码字段
     user_data = user_in.model_dump(exclude={"password"})
     user_data["hashed_password"] = hashed_password
-    db_user = User.model_validate(user_data) # user_id will be None here
+    db_user = User.model_validate(user_data)
 
+    # 将新用户添加到数据库
     session.add(db_user)
     try:
         await session.commit()
-        await session.refresh(db_user) # Refresh to get the generated user_id
-        return UserRead.model_validate(db_user) # Return using the Read schema
-    except IntegrityError as e: # Catch unique constraint violation on employee_id
+        await session.refresh(db_user)
+        return UserRead.model_validate(db_user)
+    except IntegrityError as e:
         await session.rollback()
-        # Check if the error is due to the unique constraint on employee_id
         if "unique constraint" in str(e).lower() and "employee_id" in str(e).lower():
              raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"User account for employee ID '{user_in.employee_id}' already exists."
             )
-        # Handle other potential integrity errors (e.g., foreign key)
         raise HTTPException(status_code=500, detail=f"Database integrity error: {e}")
     except Exception as e:
         await session.rollback()
@@ -77,33 +82,51 @@ async def read_users(
     session: AsyncSession = Depends(get_session)
 ):
     """
-    获取用户列表，支持分页和按状态筛选。
+    获取所有用户列表（支持分页和筛选）。
+    
+    参数:
+        status_filter (Optional[int]): 可选的状态筛选。
+        permissions_filter (Optional[int]): 可选的权限筛选。
+        page (int): 当前页码。
+        limit (int): 每页的最大记录数。
+        session (AsyncSession): 数据库会话。
+
+    返回:
+        List[UserRead]: 当前页的用户列表。
     """
     offset = (page - 1) * limit
     query = select(User)
 
+    # 应用状态筛选条件
     if status_filter is not None:
         query = query.where(User.status == status_filter)
 
+    # 应用权限筛选条件
     if permissions_filter is not None:
         query = query.where(User.permissions == permissions_filter)
 
+    # 执行查询并进行分页
     result = await session.execute(
-        query.offset(offset).limit(limit).order_by(User.user_id) # Order by new PK
+        query.offset(offset).limit(limit).order_by(User.user_id)
     )
     users = result.scalars().all()
     return [UserRead.model_validate(user) for user in users]
 
-# --- Get user by new primary key: user_id ---
 @router.get("/{user_id}", response_model=UserRead)
 async def read_user_by_id(
-    user_id: int, # ID is now int
+    user_id: int,
     session: AsyncSession = Depends(get_session)
 ):
     """
-    根据用户主键 ID 获取单个用户信息。
+    根据用户ID获取用户详情。
+    
+    参数:
+        user_id (int): 用户的唯一标识。
+        session (AsyncSession): 数据库会话。
+
+    返回:
+        UserRead: 用户详细信息。
     """
-    # session.get uses the primary key
     db_user = await session.get(User, user_id)
     if not db_user:
         raise HTTPException(
@@ -112,18 +135,24 @@ async def read_user_by_id(
         )
     return UserRead.model_validate(db_user)
 
-# --- Optional: Keep or add endpoint to get user by employee_id ---
 @router.get("/by_employee_id/{employee_id}", response_model=UserRead)
 async def read_user_by_employee_id(
     employee_id: str,
     session: AsyncSession = Depends(get_session)
 ):
     """
-    根据员工工号获取单个用户信息。
+    根据员工ID获取用户详情。
+    
+    参数:
+        employee_id (str): 员工的唯一标识。
+        session (AsyncSession): 数据库会话。
+
+    返回:
+        UserRead: 用户详细信息。
     """
     query = select(User).where(User.employee_id == employee_id)
     result = await session.execute(query)
-    db_user = result.scalar_one_or_none() # Use scalar_one_or_none for unique field
+    db_user = result.scalar_one_or_none()
 
     if not db_user:
         raise HTTPException(
@@ -132,17 +161,24 @@ async def read_user_by_employee_id(
         )
     return UserRead.model_validate(db_user)
 
-# --- Update user by new primary key: user_id ---
 @router.put("/{user_id}", response_model=UserRead)
 async def update_user(
-    user_id: int, # ID is now int
+    user_id: int,
     user_in: UserUpdate,
     session: AsyncSession = Depends(get_session)
 ):
     """
-    更新指定用户主键 ID 的用户信息（状态或密码）。
+    更新指定用户的信息。
+    
+    参数:
+        user_id (int): 用户的唯一标识。
+        user_in (UserUpdate): 包含更新数据的请求体。
+        session (AsyncSession): 数据库会话。
+
+    返回:
+        UserRead: 更新后的用户信息。
     """
-    db_user = await session.get(User, user_id) # Fetch by new PK
+    db_user = await session.get(User, user_id)
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -151,11 +187,13 @@ async def update_user(
 
     update_data = user_in.model_dump(exclude_unset=True)
 
+    # 如果有新的密码，则进行哈希处理
     if "password" in update_data:
         new_password = update_data.pop("password")
         if new_password:
              db_user.hashed_password = get_password_hash(new_password)
 
+    # 更新其他字段
     for key, value in update_data.items():
         setattr(db_user, key, value)
 
@@ -168,16 +206,22 @@ async def update_user(
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
-# --- Delete user by new primary key: user_id ---
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
-    user_id: int, # ID is now int
+    user_id: int,
     session: AsyncSession = Depends(get_session)
 ):
     """
-    根据用户主键 ID 删除用户记录。
+    删除指定用户。
+    
+    参数:
+        user_id (int): 用户的唯一标识。
+        session (AsyncSession): 数据库会话。
+
+    返回:
+        None.
     """
-    db_user = await session.get(User, user_id) # Fetch by new PK
+    db_user = await session.get(User, user_id)
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

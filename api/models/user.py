@@ -1,8 +1,7 @@
-from __future__ import annotations # For forward references in type hints
+from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 
-# Import Employee only for type checking
 if TYPE_CHECKING:
     from models.employee import Employee
     from models.licenses_usage_record import LicensesUsageRecord
@@ -10,35 +9,40 @@ if TYPE_CHECKING:
 class UserBase(SQLModel):
     employee_id: str = Field(
         index=True,
-        unique=True, # Ensure one user per employee
+        unique=True,
         foreign_key="employees.employee_id",
         description="关联的员工工号"
     )
-    permissions: int = Field(default=0) # 用户權限 (例如: 0: 用戶, 1: 管理員)
+    permissions: int = Field(default=0, description="用户权限,0为普通用户, 1为管理员")
     status: int = Field(
         default=0,
-        index=True
-        ) # 用户状态 (例如: 0: 激活, 1: 禁用)
+        index=True,
+        description="账号状态,0为正常, 1为禁用"
+        )
+    
+class UserResponse(UserBase):
+    user_id: int
+    employee_id: str
+    permissions: int
+    status: int
 
 class User(UserBase, table=True):
-    # --- New Primary Key ---
     user_id: Optional[int] = Field(
         default=None,
         primary_key=True,
         index=True,
         description="独立的用户主键ID"
     )
-    # --- End New Primary Key ---
 
     hashed_password: str = Field()
 
-    __tablename__ = "users" # Explicit table name
+    __tablename__ = "users" 
 
-    employee: Optional["Employee"] = Relationship(back_populates="user")
-
+    '''
     licenses_usage_record: list["LicensesUsageRecord"] = Relationship(
         back_populates="user_id",
         sa_relationship_kwargs={
             "lazy": "selectin"
         }
     )
+    '''

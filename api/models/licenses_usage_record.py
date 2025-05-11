@@ -57,7 +57,7 @@ class LicensesUsageRecord(LicensesUsageRecordBase, table=True):
         description="独立的领用记录ID"
     )
     __tablename__ = "licenses_usage_record"
-
+    '''
     software_license: "SoftwareLicense" = Relationship(
         back_populates="licenses_usage_record",
         sa_relationship_kwargs={
@@ -71,4 +71,4 @@ class LicensesUsageRecord(LicensesUsageRecordBase, table=True):
             "lazy": "selectin"
         }
     )
-
+    '''

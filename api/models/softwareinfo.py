@@ -8,11 +8,12 @@ if TYPE_CHECKING:
 
 class SoftwareInfo(SoftwareInfoBase, table=True):
     __tablename__ = "software_info" 
-    SoftwareInfoID: Optional[int] = Field(default=None, primary_key=True)
-
+    SoftwareInfoID: Optional[int] = Field(default=None, primary_key=True,description="软件信息ID")
+    '''
     licenses: list["SoftwareLicense"] = Relationship(
         back_populates="software_info",
         sa_relationship_kwargs={
             "lazy": "selectin"
         }
     )
+    '''

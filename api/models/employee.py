@@ -1,4 +1,4 @@
-from __future__ import annotations # For forward references in type hints
+from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 from sqlmodel import Relationship, SQLModel, Field
 
@@ -6,24 +6,24 @@ if TYPE_CHECKING:
     from models.user import User
 
 class EmployeeBase(SQLModel):
-    name: str = Field(index=True)
-    gender: int # 例如: 0: 未知, 1: 男, 2: 女
-    department: Optional[str] = Field(default=None, index=True)
-    level: int # 职级
-    status: int = Field(default=0, index=True) # 状态 (例如: 0: 在职, 1: 离职)
+    name: str = Field(index=True, description="姓名")
+    gender: int = Field(default=0, index=True, description="0为其他, 1为男, 2为女")
+    department: Optional[str] = Field(default=None, index=True, description="部门名称")
+    level: int = Field(default=1, index=True, description="范围0-5")
+    status: int = Field(default=0, index=True, description="0为在职, 1为离职,2为停用")
 
 class Employee(EmployeeBase, table=True):
-    # 将 employee_id 作为主键，通常工号是唯一的字符串
     employee_id: str = Field(
         default=None,
         primary_key=True,
         index=True,
         unique=True,
-        description="僱員工號")
+        description="工号")
 
     __tablename__ = "employees"
-
+    '''
     user: Optional["User"] = Relationship(
         back_populates="employee", # 指向 User.employee
         sa_relationship_kwargs={"lazy": "selectin"}
     )
+    '''
