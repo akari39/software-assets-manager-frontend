@@ -1,8 +1,17 @@
-import { Box, Card, colors, Link, Stack, Typography } from "@mui/material";
+import { Box, Card, Link, Stack, Typography, useTheme } from "@mui/material";
 
 export default function DashboardItem({ number, title, href, tintColor }) {
+    const theme = useTheme();
+
     return (
-        <Card sx={{ borderRadius: "16px", flexGrow: 1, padding: "12px" }}>
+        <Card
+            elevation="0px"
+            sx={{
+                borderRadius: "12px",
+                flexGrow: 1, padding: "12px",
+                border: `1px solid ${theme.palette.divider}`,
+                boxShadow: 'none'
+            }}>
             <Stack direction="column">
                 <Stack direction="row">
                     <Box style={{
@@ -13,8 +22,8 @@ export default function DashboardItem({ number, title, href, tintColor }) {
                     <Stack direction="column" sx={{
                         marginLeft: "16px",
                     }}>
-                        <Typography variant="h4">{number}</Typography>
-                        <Typography variant="body1">{title}</Typography>
+                        <Typography variant="h3" sx={{ fontWeight: 700 }}>{number}</Typography>
+                        <Typography variant="h6" color={theme.palette.text.secondary} >{title}</Typography>
                     </Stack>
                 </Stack>
                 <Box sx={{ height: "32px" }} />
