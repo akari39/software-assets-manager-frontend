@@ -7,8 +7,11 @@ import AppsIcon from '@mui/icons-material/Apps';
 import theme from './styles/theme';
 import { ErrorProvider } from './context/ErrorProvider';
 import GlobalSnackbar from './components/GlobalSnackbar';
-import { Suspense } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { LinearProgress } from '@mui/material';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
+import SsidChartIcon from '@mui/icons-material/SsidChart';
+import PersonIcon from '@mui/icons-material/Person';
 
 const NAVIGATION = [
   {
@@ -20,6 +23,21 @@ const NAVIGATION = [
     segment: 'software',
     title: '软件资产',
     icon: <AppsIcon />,
+  },
+  {
+    segment: 'softwareDetail',
+    title: '软件信息',
+    icon: <AppRegistrationIcon />,
+  },
+  {
+    segment: 'dataDashboard',
+    title: '数据看板',
+    icon: <SsidChartIcon />,
+  },
+  {
+    segment: 'userManagement',
+    title: '用户管理',
+    icon: <PersonIcon />,
   }
 ];
 
@@ -34,6 +52,31 @@ export function getTitleByPath(pathname) {
 }
 
 export default function RootLayout({ children }) {
+  const [session, setSession] = useState({
+    user: {
+      name: 'Bharat Kashyap',
+      email: 'bharatkashyap@outlook.com',
+      image: 'https://avatars.githubusercontent.com/u/19550456',
+    },
+  });
+
+  const authentication = useMemo(() => {
+    return {
+      signIn: () => {
+        setSession({
+          user: {
+            name: 'Bharat Kashyap',
+            email: 'bharatkashyap@outlook.com',
+            image: 'https://avatars.githubusercontent.com/u/19550456',
+          },
+        });
+      },
+      signOut: () => {
+        setSession(null);
+      },
+    };
+  }, []);
+
   return (
     <html lang="zh-cn">
       <body>
@@ -42,6 +85,8 @@ export default function RootLayout({ children }) {
           <AppRouterCacheProvider>
             <Suspense fallback={<LinearProgress />}>
               <NextAppProvider
+                session={session}
+                authentication={authentication}
                 navigation={NAVIGATION}
                 branding={BRANDING}
                 theme={theme}>
