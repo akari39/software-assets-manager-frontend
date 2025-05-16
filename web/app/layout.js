@@ -7,12 +7,14 @@ import AppsIcon from '@mui/icons-material/Apps';
 import theme from './styles/theme';
 import { ErrorProvider } from './context/ErrorProvider';
 import GlobalSnackbar from './components/GlobalSnackbar';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { LinearProgress } from '@mui/material';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import SsidChartIcon from '@mui/icons-material/SsidChart';
 import PersonIcon from '@mui/icons-material/Person';
-import AuthGuard from './components/AuthGuard';
+import { redirect } from 'next/dist/server/api-utils';
+import { signOutAction } from './auth/actions';
+import axiosInstance from './service/axiosConfig';
 
 const NAVIGATION = [
   {
@@ -53,27 +55,28 @@ export function getTitleByPath(pathname) {
 }
 
 export default function RootLayout({ children }) {
-  const [session, setSession] = useState({
-    user: {
-      name: 'Bharat Kashyap',
-      email: 'bharatkashyap@outlook.com',
-      image: 'https://avatars.githubusercontent.com/u/19550456',
-    },
-  });
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const employeeId = localStorage.getItem('employee_id');
+      const userRes = await axiosInstance.get(`/users/by_employee_id/${employeeId}`);
+      console.log('userRes', userRes);
+      setSession({
+        user: {
+          name: userRes.data.employee.name,
+        },
+      });
+    })();
+  }, []);
 
   const authentication = useMemo(() => {
     return {
       signIn: () => {
-        setSession({
-          user: {
-            name: 'Bharat Kashyap',
-            email: 'bharatkashyap@outlook.com',
-            image: 'https://avatars.githubusercontent.com/u/19550456',
-          },
-        });
+        redirect('/auth/signin');
       },
       signOut: () => {
-        setSession(null);
+        signOutAction();
       },
     };
   }, []);

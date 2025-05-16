@@ -13,6 +13,7 @@ export async function signInAction(provider, formData, callbackUrl) {
     const token = res.data?.access_token;
     if (token) {
         localStorage.setItem('jwt', token);
+        localStorage.setItem('employee_id', id);
         redirect(callbackUrl ?? '/');
     }
     if (globalErrorHandler) {
@@ -20,3 +21,9 @@ export async function signInAction(provider, formData, callbackUrl) {
         return null;
     }
 }
+
+export function signOutAction() {
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('employee_id');
+    redirect('/auth/signin');
+  }

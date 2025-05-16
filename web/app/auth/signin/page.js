@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { SignInPage } from '@toolpad/core/SignInPage';
-import { signInAction } from './actions';
+import { signInAction } from '../actions';
 
 export default function SignIn() {
     return (
