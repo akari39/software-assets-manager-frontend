@@ -7,7 +7,7 @@ import axiosInstance from "@/app/service/axiosConfig";
 import { Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
-import SoftwareDetailDialog from "./softwareDetail/SoftwareDetailDialog";
+import SoftwareLicenseDetailDialog from "./softwareLicenseDetail/SoftwareLicenseDetailDialog";
 import { usePathname, useSearchParams } from "next/navigation";
 
 
@@ -34,7 +34,7 @@ export default function Software() {
         page: 0,
         pageSize: 25,
     });
-    const detailId = pathname.endsWith('/softwareDetail')
+    const licenseId = pathname.endsWith('/softwareLicenseDetail')
         ? searchParams.get('id')
         : null;
 
@@ -72,12 +72,12 @@ export default function Software() {
         }
     }
 
-    // 点击「详情」时调用，给当前 URL 加上 ?softwareDetail=xxx
+    // 点击「详情」时调用，给当前 URL 加上 ?softwareLicenseDetail=xxx
     const openDetail = (id) => {
         window.history.pushState(
             null,
             '',
-            `${window.location.pathname}/softwareDetail?id=${id}`
+            `${window.location.pathname}/softwareLicenseDetail?id=${id}`
         );
     };
 
@@ -164,10 +164,10 @@ export default function Software() {
                     marginTop: "8px",
                     marginBottom: "8px",
                 }} />
-            <SoftwareDetailDialog
-                open={detailId ?? false}
+            <SoftwareLicenseDetailDialog
+                open={licenseId ?? false}
                 onClose={closeDetail}
-                softwareId={detailId}
+                licenseId={licenseId}
             />
         </Stack>
     );
