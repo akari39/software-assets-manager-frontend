@@ -156,7 +156,7 @@ async def renew_license(
         raise HTTPException(status_code=400, detail="Cannot renew a returned license")
 
     # 更新归还时间
-    new_return_time = usage_record.Return_Time + timedelta(days=request.RenewDays)
+    new_return_time = usage_record.Return_Time + timedelta(days=request.Renew_Days)
     usage_record.Return_Time = new_return_time
 
     session.add(usage_record)

@@ -27,4 +27,4 @@ class LicensesUsageRecordUpdate(BaseModel):
 
 class LicensesUsageRecordRenew(BaseModel):
     RecordID: int
-    Duration_Days: int
+    Renew_Days: int
