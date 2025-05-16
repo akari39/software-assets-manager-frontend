@@ -1,10 +1,20 @@
 'use client';
 
-import * as React from 'react';
 import { SignInPage } from '@toolpad/core/SignInPage';
+import { redirect } from 'next/navigation';
+import { useEffect } from 'react';
 import { signInAction } from '../actions';
 
 export default function SignIn() {
+    useEffect(() => {
+        const jwt = localStorage.getItem('jwt');
+        const employee_id = localStorage.getItem('employee_id');
+
+        if (jwt && employee_id) {
+            redirect('/');
+        }
+    }, []);
+
     return (
         <SignInPage
             providers={[

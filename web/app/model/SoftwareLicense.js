@@ -8,8 +8,8 @@ export class SoftwareInfo {
 }
 
 export const LICENSE_STATUS = {
-  0: "已领用",
-  1: "未领用",
+  1: "已领用",
+  0: "未领用",
 };
 
 // Main class for SoftwareLicense
