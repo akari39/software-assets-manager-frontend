@@ -1,8 +1,8 @@
 'use client';
 
 import { usePathname } from "next/navigation";
-import { getTitleByPath } from "../layout";
 import { Box, Typography } from "@mui/material";
+import { getTitleByPath } from "../(form)/layout";
 
 export default function SAMPageContainer({ children }) {
     const pathname = usePathname();

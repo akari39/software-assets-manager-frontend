@@ -13,14 +13,15 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 const SOFTWARE_SEARCH_OPTIONS = [
     { value: "all", name: "全部" },
-    { value: "b", name: "丰川祥子" },
+    { value: "software_name", name: "软件名称" },
+    { value: "software_id", name: "软件ID" },
 ];
 
 const SOFTWARE_DEFALUT_SEARCH_OPTIONS = SOFTWARE_SEARCH_OPTIONS[0];
 
 const SOFTWARE_CHOICES = [
-    { name: '已领用', value: 0, isDefault: true },
-    { name: '全部', value: 1 },
+    { name: '已领用', value: 1, isDefault: true },
+    { name: '全部', value: null },
 ];
 
 export default function Software() {
@@ -41,12 +42,18 @@ export default function Software() {
     }, [status]);
 
     async function fetchData() {
-        const response = await axiosInstance.get('/licenses_with_info/', {
-            params: {
-                page: paginationModel.page + 1,
-                limit: paginationModel.pageSize,
+        let params = {
+            page: paginationModel.page + 1,
+            limit: paginationModel.pageSize,
+        };
+        if (status?.value) {
+            params = {
+                ...params,
                 status: status.value,
-            },
+            }
+        }
+        const response = await axiosInstance.get('/licenses_with_info/', {
+            params: params,
         });
         const data = response.data;
         setLicenseData(SoftwareLicense.fromArray(data));

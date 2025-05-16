@@ -5,7 +5,6 @@ import { Button, InputAdornment, OutlinedInput, Stack, TextField } from '@mui/ma
 import SearchIcon from '@mui/icons-material/Search';
 
 export default function FilterSearchBar(props) {
-
     return <Stack
         direction="row"
         flexWrap="wrap"
@@ -14,7 +13,7 @@ export default function FilterSearchBar(props) {
             marginRight: "32px",
             marginTop: "8px",
             marginBottom: "8px",
-            alignItems: "end"
+            alignItems: "end",
         }}>
         <FormControl sx={{ m: 1, minWidth: 100 }} size="small">
             <TextField
@@ -28,8 +27,8 @@ export default function FilterSearchBar(props) {
                 {props.options.map((option) => <MenuItem value={option.value}>{option.name}</MenuItem>)}
             </TextField>
         </FormControl>
-        <Stack direction="row" alignItems="center">
-            <FormControl sx={{ m: 1, width: 300 }} variant="outlined">
+        <Stack direction="row" alignItems="center" sx={{ flexGrow: 1 }}>
+            <FormControl sx={{ m: 1 }} variant="outlined" fullWidth>
                 <OutlinedInput
                     startAdornment={<InputAdornment position="start"><SearchIcon /></InputAdornment>}
                     placeholder={props.placeholder}

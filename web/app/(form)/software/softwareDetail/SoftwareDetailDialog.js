@@ -2,10 +2,8 @@ import { Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typograp
 import CloseIcon from '@mui/icons-material/Close';
 
 export default function SoftwareDetailDialog({ open, onClose, softwareDetail }) {
-    if (softwareDetail == null) {
-        return <></>;
-    }
-    return <Dialog
+
+    return softwareDetail == null ? <></> : <Dialog
         open={open}
         onClose={onClose}>
         <DialogTitle>
