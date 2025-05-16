@@ -4,12 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta, timezone
 
 # 导入模型和依赖项
+from models.employee import Employee
 from models.softwarelicense import SoftwareLicense
 from models.user import User
 from models.licenses_usage_record import LicensesUsageRecord
 from dependencies import get_session
 from utils.jwt import get_current_user
-from schemas.licenses_usage_record import LicensesUsageRecordRead, LicensesUsageRecordCreate, LicensesUsageRecordRenew
+from schemas.licenses_usage_record import LicensesUsageRecordRead, LicensesUsageRecordRenew, LicensesUsageRecordApply, LicensesUsageRecordReturn
 
 # 创建路由实例，设置前缀和标签
 router = APIRouter(prefix="/licenses_usage_records", tags=["Licenses Apply & Return & Renew"])
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/licenses_usage_records", tags=["Licenses Apply & Ret
 
 @router.post("/apply", response_model=LicensesUsageRecordRead, status_code=status.HTTP_201_CREATED)
 async def apply_license(
-    request: LicensesUsageRecordCreate,
+    request: LicensesUsageRecordApply,
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
 ):
@@ -39,11 +40,19 @@ async def apply_license(
     if active_usage.scalars().first():
         raise HTTPException(status_code=409, detail="License is already in use")
 
-    # 检查用户级别是否满足许可证的要求
-    if license_db.LvLimit is not None and user_db.employee.level < license_db.LvLimit:
+    # 查询员工信息
+    result = await session.execute(
+        select(Employee).where(Employee.employee_id == current_user.employee_id)
+    )
+    employee = result.scalars().first()
+
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+
+    if license_db.LvLimit is not None and employee.level < license_db.LvLimit:
         raise HTTPException(
             status_code=403,
-            detail=f"User level {user_db.employee.level} does not meet required level {license_db.LvLimit}"
+            detail=f"User level {employee.level} does not meet required level {license_db.LvLimit}"
         )
 
     # 设置借出时间和归还时间
@@ -78,7 +87,7 @@ async def apply_license(
 
 @router.post("/return", response_model=LicensesUsageRecordRead, status_code=status.HTTP_200_OK)
 async def return_license_by_usage_id(
-    request: LicensesUsageRecordRead,
+    request: LicensesUsageRecordReturn,
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
 ):

@@ -7,6 +7,13 @@ class LicensesUsageRecordCreate(LicensesUsageRecordBase):
     LicenseID: int
     Duration_Days: int
 
+class LicensesUsageRecordApply(BaseModel):
+    LicenseID: int
+    Duration_Days: int
+
+class LicensesUsageRecordReturn(BaseModel):
+    LicenseID: int
+
 class LicensesUsageRecordRead(LicensesUsageRecordBase):
     RecordID: int
 
