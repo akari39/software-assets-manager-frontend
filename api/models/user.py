@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
+from schemas.employee import EmployeeRead
 
 if TYPE_CHECKING:
     from models.employee import Employee
@@ -25,6 +26,9 @@ class UserResponse(UserBase):
     employee_id: str
     permissions: int
     status: int
+
+class UserReadWithEmployee(UserResponse):
+    employee: Optional[EmployeeRead] = None
 
 class User(UserBase, table=True):
     user_id: Optional[int] = Field(

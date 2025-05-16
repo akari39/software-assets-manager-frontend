@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from dependencies import get_session
-from models.user import User
+from models.user import User, UserReadWithEmployee
 from models.employee import Employee
 from schemas.user import UserCreate, UserRead, UserUpdate
+from schemas.employee import EmployeeRead
 from utils.PwdHash import get_password_hash, verify_password
 
 # 创建一个API路由实例，前缀为 "/users"，标签为 "Users"
@@ -73,7 +74,7 @@ async def create_user(
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
-@router.get("/", response_model=List[UserRead])
+@router.get("/", response_model=List[UserReadWithEmployee])
 async def read_users(
     status_filter: Optional[int] = Query(None, alias="status", description="按用户状态筛选 (例如: 0=激活, 1=禁用)"),
     permissions_filter: Optional[int] = Query(None, alias="permissions", description="按用户權限筛选 (例如: 0=用戶, 1=管理員)"),
@@ -95,7 +96,10 @@ async def read_users(
         List[UserRead]: 当前页的用户列表。
     """
     offset = (page - 1) * limit
-    query = select(User)
+    query = (
+        select(User, Employee)
+        .join(Employee, User.employee_id == Employee.employee_id)
+        )
 
     # 应用状态筛选条件
     if status_filter is not None:
@@ -109,10 +113,19 @@ async def read_users(
     result = await session.execute(
         query.offset(offset).limit(limit).order_by(User.user_id)
     )
-    users = result.scalars().all()
-    return [UserRead.model_validate(user) for user in users]
+    users_with_employees = result.all()
+    return [
+            UserReadWithEmployee(
+                user_id=user.user_id,
+                employee_id=user.employee_id,
+                permissions=user.permissions,
+                status=user.status,
+                employee=EmployeeRead.model_validate(employee)
+            )
+            for user, employee in users_with_employees
+        ]
 
-@router.get("/{user_id}", response_model=UserRead)
+@router.get("/{user_id}", response_model=UserReadWithEmployee)
 async def read_user_by_id(
     user_id: int,
     session: AsyncSession = Depends(get_session)
@@ -127,15 +140,23 @@ async def read_user_by_id(
     返回:
         UserRead: 用户详细信息。
     """
-    db_user = await session.get(User, user_id)
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with ID {user_id} not found"
-        )
-    return UserRead.model_validate(db_user)
+    result = await session.execute(
+        select(User, Employee).join(Employee).where(User.user_id == user_id)
+    )
+    row = result.first()
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
 
-@router.get("/by_employee_id/{employee_id}", response_model=UserRead)
+    user, employee = row
+    return UserReadWithEmployee(
+        user_id=user.user_id,
+        employee_id=user.employee_id,
+        permissions=user.permissions,
+        status=user.status,
+        employee=EmployeeRead.model_validate(employee)
+    )
+
+@router.get("/by_employee_id/{employee_id}", response_model=UserReadWithEmployee)
 async def read_user_by_employee_id(
     employee_id: str,
     session: AsyncSession = Depends(get_session)
@@ -150,16 +171,26 @@ async def read_user_by_employee_id(
     返回:
         UserRead: 用户详细信息。
     """
-    query = select(User).where(User.employee_id == employee_id)
-    result = await session.execute(query)
-    db_user = result.scalar_one_or_none()
+    result = await session.execute(
+        select(User, Employee).join(Employee).where(User.employee_id == employee_id)
+    )
+    row = result.first()
 
-    if not db_user:
+    if not row:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with employee ID '{employee_id}' not found"
         )
-    return UserRead.model_validate(db_user)
+
+    user, employee = row
+
+    return UserReadWithEmployee(
+        user_id=user.user_id,
+        employee_id=user.employee_id,
+        permissions=user.permissions,
+        status=user.status,
+        employee=EmployeeRead.model_validate(employee)
+    )
 
 @router.put("/{user_id}", response_model=UserRead)
 async def update_user(
