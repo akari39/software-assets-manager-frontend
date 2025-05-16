@@ -34,7 +34,7 @@ export default function GlobalSnackbar() {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
     >
       <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-        {error}
+        {(typeof(error) == String) ? error : JSON.stringify(error)}
       </Alert>
     </Snackbar>
   );

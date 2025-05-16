@@ -28,6 +28,22 @@ export default class SoftwareLicense {
     this.softwareInfo = data.software_info ? new SoftwareInfo(data.software_info) : null;
   }
 
+  function toJson() {
+    return {
+      SoftwareInfoID: this.softwareInfoID,
+      LicenseType: this.licenseType,
+      LicenseStatus: this.licenseStatus,
+      LicenseKey: this.licenseKey,
+      LicenseExpiredDate: this.licenseExpiredDate,
+      LvLimit: this.lvLimit,
+      Remark: this.remark,
+      LicenseID: this.licenseID,
+      CreateTime: this.createTime,
+      LastUpdateTime: this.lastUpdateTime,
+      software_info: this.softwareInfo ? this.softwareInfo.toJson() : null,
+    };
+  }
+
   // Getter: format the license expired date as a human-readable string
   get formattedLicenseExpiredDate() {
     if (!this.licenseExpiredDate) return "未设置";

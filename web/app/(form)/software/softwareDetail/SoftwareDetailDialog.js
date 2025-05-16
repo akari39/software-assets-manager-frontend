@@ -1,7 +1,25 @@
 import { Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
+import { useEffect } from "react";
+import axiosInstance from "@/app/service/axiosConfig";
+import SoftwareLicense from "@/app/model/SoftwareLicense";
 
-export default function SoftwareDetailDialog({ open, onClose, softwareDetail }) {
+export default function SoftwareDetailDialog({ open, onClose, softwareId }) {
+    const [softwareDetail, setSoftwareDetail] = useState(null);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    async function fetchData() {
+        const detail = await axiosInstance.get(`license_with_info/${softwareId}`);
+        setSoftwareDetail(SoftwareLicense(detail.data));
+    }
+
+    async function receive() {
+        await axiosInstance.put(`softwarelicense/${softwareDetail.licenseID}`, softwareDetail.toJson());
+        fetchData();
+    }
 
     return softwareDetail == null ? <></> : <Dialog
         open={open}
@@ -29,7 +47,7 @@ export default function SoftwareDetailDialog({ open, onClose, softwareDetail }) 
                 }}>
                 <Typography variant="h4">{softwareDetail.softwareInfo.softwareInfoName}</Typography>
                 <Typography variant="body1"><b>软件ID：</b>{softwareDetail.softwareInfoID}</Typography>
-                <Button variant="contained" disableElevation>
+                <Button variant="contained" disableElevation onClick={receive}>
                     领用
                 </Button>
             </Stack>
