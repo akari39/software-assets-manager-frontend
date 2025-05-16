@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "@/app/service/axiosConfig";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
 
