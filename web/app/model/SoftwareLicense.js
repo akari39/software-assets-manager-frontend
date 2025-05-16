@@ -28,7 +28,7 @@ export default class SoftwareLicense {
     this.softwareInfo = data.software_info ? new SoftwareInfo(data.software_info) : null;
   }
 
-  function toJson() {
+  toJson() {
     return {
       SoftwareInfoID: this.softwareInfoID,
       LicenseType: this.licenseType,
