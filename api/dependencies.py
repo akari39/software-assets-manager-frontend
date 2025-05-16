@@ -28,6 +28,9 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
             await session.rollback()
             # 抛出 HTTP 异常，返回 500 错误和异常信息
             raise HTTPException(status_code=500, detail=f"Database session error occurred: {str(e)}")
+        except HTTPException as e:
+            # 捕获 HTTP 异常，直接抛出
+            raise e
         except Exception as e:
             # 捕获其他未知异常，抛出通用的服务器错误
             raise HTTPException(status_code=500, detail=f"Unexpected error in session management: {str(e)}")
