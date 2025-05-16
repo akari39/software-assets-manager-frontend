@@ -40,7 +40,6 @@ async def login(
         select(User).where(User.employee_id == request.employee_id)
     )
     user = result.scalars().first()
-    print("!!!!!!!!!!!!!user!!!!!!!:"+user)
 
     # 如果用户不存在或密码不正确，抛出异常
     if not user or not verify_password(request.password, user.hashed_password):
