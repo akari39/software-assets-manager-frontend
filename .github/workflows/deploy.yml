@@ -20,7 +20,7 @@ jobs:
           POSTGRES_USER=${{ vars.POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB=${{ vars.POSTGRES_DB }}
-          NEXT_PUBLIC_API_URL_DEV=http://192.168.46.4:12000
+          NEXT_PUBLIC_API_URL_DEV=http://10.242.0.1:12000
           EOF
 
       - name: View docker、docker-compose versions
