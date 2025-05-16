@@ -192,7 +192,7 @@ async def read_user_by_employee_id(
         employee=EmployeeRead.model_validate(employee)
     )
 
-@router.put("/{user_id}", response_model=UserRead)
+@router.put("/{user_id}", response_model=UserReadWithEmployee)
 async def update_user(
     user_id: int,
     user_in: UserUpdate,
@@ -228,11 +228,26 @@ async def update_user(
     for key, value in update_data.items():
         setattr(db_user, key, value)
 
-    session.add(db_user)
     try:
         await session.commit()
         await session.refresh(db_user)
-        return UserRead.model_validate(db_user)
+
+        # 查询关联的 Employee 信息
+        result = await session.execute(
+            select(Employee).where(Employee.employee_id == db_user.employee_id)
+        )
+        employee = result.scalars().first()
+
+        if not employee:
+            raise HTTPException(status_code=404, detail="Employee info not found")
+
+        return UserReadWithEmployee(
+            user_id=db_user.user_id,
+            employee_id=db_user.employee_id,
+            permissions=db_user.permissions,
+            status=db_user.status,
+            employee=EmployeeRead.model_validate(employee)
+        )
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {e}")

@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Dict, Tuple
+from schemas.licenses_usage_record import LicensesUsageRecordRead
+from models.licenses_usage_record import LicensesUsageRecord
 from dependencies import get_session  # 获取数据库会话的依赖
 from models.softwarelicense import SoftwareLicense  # 软件授权模型
 from models.softwareinfo import SoftwareInfo  # 软件信息模型
@@ -27,11 +29,9 @@ async def get_licenses_list_manual_join(
     session: AsyncSession = Depends(get_session)
 ):
 
-    offset = (page - 1) * limit  # 计算偏移量
+    offset = (page - 1) * limit
+    license_statement = select(SoftwareLicense)
 
-    license_statement = select(SoftwareLicense)  # 初始化查询语句
-
-    # 根据参数添加过滤条件
     if license_type is not None:
         license_statement = license_statement.where(SoftwareLicense.LicenseType == license_type)
     if status_filter is not None:
@@ -39,37 +39,66 @@ async def get_licenses_list_manual_join(
     if software_id is not None:
         license_statement = license_statement.where(SoftwareLicense.SoftwareInfoID == software_id)
 
-    # 添加分页限制
     license_statement = license_statement.offset(offset).limit(limit)
-
-    result_licenses = await session.execute(license_statement)  # 执行查询
-    licenses_db: List[SoftwareLicense] = result_licenses.scalars().all()  # 获取结果
+    result_licenses = await session.execute(license_statement)
+    licenses_db: List[SoftwareLicense] = result_licenses.scalars().all()
 
     if not licenses_db:
-        return []  # 如果没有结果则返回空列表
+        return []
 
-    # 提取所有相关的软件信息ID
+    # 获取 software info
     software_info_ids = {lic.SoftwareInfoID for lic in licenses_db if lic.SoftwareInfoID is not None}
-
-    software_info_map: Dict[int, SoftwareInfoRead] = {}
-    if software_info_ids: 
-        info_statement = select(SoftwareInfo).where(SoftwareInfo.SoftwareInfoID.in_(software_info_ids))  # 查询软件信息
+    software_info_map = {}
+    if software_info_ids:
+        info_statement = select(SoftwareInfo).where(SoftwareInfo.SoftwareInfoID.in_(software_info_ids))
         result_info = await session.execute(info_statement)
-        software_infos_db: List[SoftwareInfo] = result_info.scalars().all()
+        software_infos_db = result_info.scalars().all()
         for info_db in software_infos_db:
-            software_info_map[info_db.SoftwareInfoID] = SoftwareInfoRead.model_validate(info_db)  # 构建映射关系
+            software_info_map[info_db.SoftwareInfoID] = SoftwareInfoRead.model_validate(info_db)
 
-    combined_results: List[SoftwareLicenseReadWithInfo] = []
+    # 获取每个 license 的最新 usage record
+    license_ids = [lic.LicenseID for lic in licenses_db]
+    usage_records_map = {}
+
+    if license_ids:
+        record_statement = (
+            select(LicensesUsageRecord)
+            .where(
+                LicensesUsageRecord.LicenseID.in_(license_ids),
+                LicensesUsageRecord.Actually_Return_Time.is_(None)
+            )
+            .order_by(LicensesUsageRecord.Checkout_time.desc())
+        )
+
+        result_records = await session.execute(record_statement)
+        records_db = result_records.scalars().all()
+
+        # 构建映射：license_id -> 最新 record
+        from collections import defaultdict
+        grouped_records = defaultdict(list)
+        for r in records_db:
+            grouped_records(r.LicenseID).append(r)
+
+        # 取每个 license 的第一条（最新）
+        for lid in license_ids:
+            if grouped_records[lid]:
+                usage_records_map[lid] = LicensesUsageRecordRead.model_validate(grouped_records[lid][0])
+
+    # 组合数据
+    combined_results = []
     for license_db in licenses_db:
-        license_read = SoftwareLicenseRead.model_validate(license_db)
-        info_read = software_info_map.get(license_db.SoftwareInfoID)
+        lic_data = SoftwareLicenseRead.model_validate(license_db)
+        info_data = software_info_map.get(license_db.SoftwareInfoID)
+        record_data = usage_records_map.get(license_db.LicenseID)
+
         combined = SoftwareLicenseReadWithInfo(
-            **license_read.model_dump(),
-            software_info=info_read
+            **lic_data.model_dump(),
+            software_info=info_data,
+            latest_usage_record=record_data
         )
         combined_results.append(combined)
 
-    return combined_results  # 返回组合后的结果
+    return combined_results
 
 
 # 搜索授权信息接口
