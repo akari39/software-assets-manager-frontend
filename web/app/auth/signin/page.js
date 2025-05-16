@@ -2,30 +2,7 @@
 
 import * as React from 'react';
 import { SignInPage } from '@toolpad/core/SignInPage';
-import axiosInstance from '@/app/service/axiosConfig';
-import { redirect } from 'next/navigation';
-
-const signin = async (provider, formData, callbackUrl) => {
-    return new Promise(async (resolve, reject) => {
-        const id = formData.get('email')?.toString();
-        const password = formData.get('password')?.toString();
-        console.log('Login');
-        const res = await axiosInstance.post('/login', {
-            employee_id: id,
-            password: password,
-        });
-
-        // 2) if successful, NextAuth will store this object in the JWT
-        if (res?.data?.access_token) {
-            // return {
-            //     id: credentials.id,
-            //     accessToken: user.access_token,
-            // };
-            console.log('redirecting to', callbackUrl);
-            redirect(callbackUrl);
-        }
-    });
-};
+import { signInAction } from './actions';
 
 export default function SignIn() {
     return (
@@ -59,7 +36,7 @@ export default function SignIn() {
                     type: 'text',
                 },
             }}
-            signIn={signin}
+            signIn={signInAction}
         />
     );
 }

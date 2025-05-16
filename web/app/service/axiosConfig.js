@@ -1,7 +1,7 @@
 // services/axiosConfig.js
 import axios from 'axios';
 
-let globalErrorHandler = null;
+export let globalErrorHandler = null;
 
 export function setGlobalErrorHandler(handler) {
   globalErrorHandler = handler;
@@ -24,7 +24,13 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('jwt');
+      window.location.href = '/auth/signin';
+    }
+    return Promise.reject(error);
+  }
 );
 
 axiosInstance.interceptors.response.use(

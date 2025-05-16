@@ -12,6 +12,7 @@ import { LinearProgress } from '@mui/material';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import SsidChartIcon from '@mui/icons-material/SsidChart';
 import PersonIcon from '@mui/icons-material/Person';
+import AuthGuard from './components/AuthGuard';
 
 const NAVIGATION = [
   {
