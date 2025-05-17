@@ -28,9 +28,9 @@ async def get_licenses_list_manual_join(
     software_id: Optional[int] = Query(None, description="按关联软件ID筛选"),
     page: int = Query(1, ge=1, description="页码"),
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    user: UserReadWithEmployee = Depends(get_current_user)
 ):
-    user,employee =  UserReadWithEmployee(Depends(get_current_user))
     offset = (page - 1) * limit
     license_statement = select(SoftwareLicense)
 
@@ -45,7 +45,7 @@ async def get_licenses_list_manual_join(
     if software_id is not None:
         license_statement = license_statement.where(SoftwareLicense.SoftwareInfoID == software_id)
     license_statement = license_statement.where(
-        SoftwareLicense.LvLimit <= employee.level
+        SoftwareLicense.LvLimit <= user.employee.level
     )
     license_statement = license_statement.offset(offset).limit(limit)
     result_licenses = await session.execute(license_statement)
@@ -118,7 +118,8 @@ async def search_licenses_with_info(
     status_filter: Optional[int] = Query(None, alias="status", description="按当前状态筛选"),
     page: int = Query(1, ge=1, description="页码"),
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    user: UserReadWithEmployee = Depends(get_current_user)
 ):
 
     offset = (page - 1) * limit  # 计算偏移量
@@ -127,8 +128,7 @@ async def search_licenses_with_info(
     query = select(SoftwareLicense, SoftwareInfo).outerjoin(
         SoftwareInfo, SoftwareLicense.SoftwareInfoID == SoftwareInfo.SoftwareInfoID
     )
-    user,employee =  User(Depends(get_current_user))
-
+    
     try:
         # 根据搜索类别添加不同的过滤条件
         if search_category == "software_name":
