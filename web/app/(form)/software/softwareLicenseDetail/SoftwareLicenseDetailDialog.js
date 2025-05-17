@@ -1,33 +1,49 @@
-import { Button, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, LinearProgress, Stack, Typography } from "@mui/material";
+import { Button, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from "react";
 import axiosInstance from "@/app/service/axiosConfig";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
+import ConfirmAlertDialog from "@/app/components/ConfirmAlertDialog";
 
 export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }) {
     const [softwareDetail, setSoftwareDetail] = useState(null);
+    const [confirmAlertDialogOpen, setConfirmAlertDialogOpen] = useState(false);
 
     useEffect(() => {
         fetchData();
     }, []);
 
     async function fetchData() {
-        console.log("licenseId", licenseId);
         const detail = await axiosInstance.get(`/licenses_with_info/${licenseId}`);
+        setSoftwareDetail(new SoftwareLicense(detail.data));
+    }
+
+    async function renewLicense() {
+        const detail = await axiosInstance.post(`/licenses_usage_records/${licenseId}/renew`, {
+            RecordID: licenseId,
+            Duration_Days: 60,
+        });
         setSoftwareDetail(new SoftwareLicense(detail.data));
     }
 
     async function receive() {
         await axiosInstance.post('/licenses_usage_records/apply', {
             LicenseID: licenseId,
-            Duration_Days: 180,
+            Duration_Days: 60,
         });
         fetchData();
     }
 
     return <Dialog
         open={open}
-        onClose={onClose}>
+        onClose={onClose}
+        slotProps={{
+            paper: {
+                sx: {
+                    minWidth: "400px",
+                },
+            },
+        }}>
         <DialogTitle>
             软件详情
         </DialogTitle>
@@ -44,7 +60,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
         </IconButton>
         <DialogContent>
             {
-                softwareDetail === null ? <Stack direction="row" sx={{ gap: "16px", alignItems: "center" }}>
+                softwareDetail === null ? <Stack direction="row" sx={{ gap: "20px", alignItems: "center" }}>
                     <CircularProgress />
                     <Typography variant="body1">加载中...</Typography>
                 </Stack> : <>
@@ -56,9 +72,23 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                         }}>
                         <Typography variant="h4">{softwareDetail.softwareInfo.softwareInfoName}</Typography>
                         <Typography variant="body1"><b>软件ID：</b>{softwareDetail.softwareInfoID}</Typography>
-                        <Button variant="contained" disableElevation onClick={receive}>
-                            领用
-                        </Button>
+                        <Stack direction="row">
+                            <Button variant="contained"
+                                disableElevation
+                                fullWidth
+                                onClick={softwareDetail.licenseStatus === 1 ? () => setConfirmAlertDialogOpen(true) : receive}
+                                sx={{ marginRight: "8px" }}>
+                                {
+                                    softwareDetail.licenseStatus === 1 ? "续租" : "领用"
+                                }
+                            </Button>
+                        </Stack>
+                        <ConfirmAlertDialog
+                                title="要续租吗？"
+                                content="续租将延长60天资产使用权。"
+                                open={confirmAlertDialogOpen}
+                                setOpen={setConfirmAlertDialogOpen}
+                                onConfirm={renewLicense} />
                     </Stack>
                     <Typography variant="h6">授权信息</Typography>
                     <Typography variant="body1"><b>授权ID: </b>{softwareDetail.licenseID}</Typography>
