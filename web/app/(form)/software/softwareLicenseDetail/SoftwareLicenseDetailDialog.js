@@ -26,46 +26,58 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
 
     async function fetchData() {
         setLoading(true);
-        const { data } = await axiosInstance.get(
-            `/licenses_with_info/${licenseId}`
-        );
-        setLoading(false);
-        setSoftwareDetail(new SoftwareLicense(data));
+        try {
+            const { data } = await axiosInstance.get(
+                `/licenses_with_info/${licenseId}`
+            );
+            setSoftwareDetail(new SoftwareLicense(data));
+        } catch (error) {
+            console.error("Error fetching software license detail:", error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     async function handleApply() {
         setLoading(true);
-        await axiosInstance.post(
-            `/licenses_usage_records/apply`,
-            { LicenseID: licenseId, Duration_Days: 60 }
-        );
-        fetchData();
+        try {
+            await axiosInstance.post(
+                `/licenses_usage_records/apply`,
+                { LicenseID: licenseId, Duration_Days: 60 }
+            );
+            fetchData();
+        } catch (error) {
+            console.error("Error applying for software license:", error);
+            setLoading(false);
+        }
     }
 
     async function handleRenew() {
         setLoading(true);
-        const result = await axiosInstance.post(
-            `/licenses_usage_records/renew`,
-            { RecordID: licenseId, Renew_Days: 60 }
-        );
-        if (result == null) {
-            return;
+        try {
+            const result = await axiosInstance.post(
+                `/licenses_usage_records/renew`,
+                { RecordID: licenseId, Renew_Days: 60 }
+            );
+            fetchData();
+        } catch (error) {
+            console.error("Error renewing software license:", error);
+            setLoading(false);
         }
-        fetchData();
     }
 
     async function handleReturn() {
         setLoading(true);
-        const result = await axiosInstance.post(
-            `/licenses_usage_records/return`,
-            { LicenseID: licenseId }
-        );
-        if (result == null) {
-            return;
+        try {
+            const result = await axiosInstance.post(
+                `/licenses_usage_records/return`,
+                { LicenseID: licenseId }
+            );
+            fetchData();
+        } catch (error) {
+            console.error("Error returning software license:", error);
+            setLoading(false);
         }
-        onClose();
-        setConfirmReturnOpen(false);
-        handleMenuClose();
     }
 
     return (
