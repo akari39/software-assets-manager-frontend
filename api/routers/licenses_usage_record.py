@@ -85,47 +85,56 @@ async def apply_license(
         raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 
+
 @router.post("/return", response_model=LicensesUsageRecordRead, status_code=status.HTTP_200_OK)
 async def return_license_by_usage_id(
     request: LicensesUsageRecordReturn,
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
 ):
-    record_id = request.RecordID
+    license_id = request.LicenseID
 
     # 查询使用记录
-    usage_record = await session.get(LicensesUsageRecord, record_id)
-    if not usage_record:
+    record_statement = (
+        select(LicensesUsageRecord)
+        .where(
+            LicensesUsageRecord.LicenseID == license_id,
+            LicensesUsageRecord.Actually_Return_Time.is_(None)
+        )
+        .order_by(LicensesUsageRecord.Checkout_time.desc())
+        .limit(1)
+    )
+    if not record_statement:
         raise HTTPException(status_code=404, detail="没有找到使用记录")
 
     # 确保当前用户有权限归还该许可证
-    if usage_record.UserID != current_user.user_id:
+    if record_statement.UserID != current_user.user_id:
         raise HTTPException(
             status_code=403,
             detail="不能归还非本人的授权"
         )
 
     # 确认该许可证尚未被归还
-    if usage_record.Actually_Return_Time is not None:
+    if record_statement.Actually_Return_Time is not None:
         raise HTTPException(status_code=400, detail="无法归还已经归还的授权")
 
     # 更新实际归还时间和过期状态
-    usage_record.Actually_Return_Time = datetime.now(timezone.utc)
-    usage_record.is_expired = True
+    record_statement.Actually_Return_Time = datetime.now(timezone.utc)
+    record_statement.is_expired = True
 
     # 更新许可证状态和最后更新时间
-    license_db = await session.get(SoftwareLicense, usage_record.LicenseID)
+    license_db = await session.get(SoftwareLicense, record_statement.LicenseID)
     if license_db:
         license_db.LicenseStatus = 0
         license_db.LastUpdateTime = datetime.now(timezone.utc)
         session.add(license_db)
 
-    session.add(usage_record)
+    session.add(record_statement)
 
     try:
         await session.commit()
-        await session.refresh(usage_record)
-        return usage_record
+        await session.refresh(record_statement)
+        return record_statement
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
