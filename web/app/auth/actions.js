@@ -5,10 +5,17 @@ export async function signInAction(provider, formData, callbackUrl) {
     const id = formData.get('email')?.toString();
     const password = formData.get('password')?.toString();
 
-    const res = await axiosInstance.post('/login', {
-        employee_id: id,
-        password: password,
-    });
+    try {
+        const res = await axiosInstance.post('/login', {
+            employee_id: id,
+            password: password,
+        });
+    } catch (error) {
+        if (globalErrorHandler) {
+            globalErrorHandler('登录失败，请检查工号和密码');
+            return null;
+        }
+    }
 
     const token = res?.data?.access_token;
     if (token) {
@@ -16,14 +23,10 @@ export async function signInAction(provider, formData, callbackUrl) {
         localStorage.setItem('employee_id', id);
         redirect(callbackUrl ?? '/');
     }
-    if (globalErrorHandler) {
-        globalErrorHandler('登录失败，请检查工号和密码');
-        return null;
-    }
 }
 
 export function signOutAction() {
     localStorage.removeItem('jwt');
     localStorage.removeItem('employee_id');
     redirect('/auth/signin');
-  }
+}
