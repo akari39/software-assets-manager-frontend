@@ -95,7 +95,7 @@ async def return_license_by_usage_id(
     license_id = request.LicenseID
 
     # 查询使用记录
-    record_statement = (
+    record_query = (
         select(LicensesUsageRecord)
         .where(
             LicensesUsageRecord.LicenseID == license_id,
@@ -104,6 +104,10 @@ async def return_license_by_usage_id(
         .order_by(LicensesUsageRecord.Checkout_time.desc())
         .limit(1)
     )
+
+    record_result = await session.execute(record_query)
+    record_statement = record_result.scalars().first()
+
     if not record_statement:
         raise HTTPException(status_code=404, detail="没有找到使用记录")
 
