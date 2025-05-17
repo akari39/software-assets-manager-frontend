@@ -30,7 +30,7 @@ async def get_licenses_list_manual_join(
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
     session: AsyncSession = Depends(get_session)
 ):
-    user =  User(Depends(get_current_user))
+    user,employee =  User(Depends(get_current_user))
     offset = (page - 1) * limit
     license_statement = select(SoftwareLicense)
 
@@ -45,7 +45,7 @@ async def get_licenses_list_manual_join(
     if software_id is not None:
         license_statement = license_statement.where(SoftwareLicense.SoftwareInfoID == software_id)
     license_statement = license_statement.where(
-        SoftwareLicense.LvLimit <= user.employee.level
+        SoftwareLicense.LvLimit <= employee.level
     )
     license_statement = license_statement.offset(offset).limit(limit)
     result_licenses = await session.execute(license_statement)
