@@ -7,12 +7,11 @@ import axiosInstance from "@/app/service/axiosConfig";
 import { Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
-import SoftwareDetailDialog from "./softwareDetail/SoftwareDetailDialog";
+import SoftwareLicenseDetailDialog from "./softwareLicenseDetail/SoftwareLicenseDetailDialog";
 import { usePathname, useSearchParams } from "next/navigation";
 
 
 const SOFTWARE_SEARCH_OPTIONS = [
-    { value: "all", name: "全部" },
     { value: "software_name", name: "软件名称" },
     { value: "software_id", name: "软件ID" },
 ];
@@ -29,11 +28,13 @@ export default function Software() {
     const searchParams = useSearchParams();
     const [licenseData, setLicenseData] = useState(null);
     const [status, setStatus] = useState(SOFTWARE_CHOICES.find((choice) => choice.isDefault) ?? null);
+    const [searchFilter, setSearchFilter] = useState(SOFTWARE_DEFALUT_SEARCH_OPTIONS.value);
+    const [searchKeywords, setSearchKeywords] = useState('');
     const [paginationModel, setPaginationModel] = useState({
         page: 0,
         pageSize: 25,
     });
-    const detailId = pathname.endsWith('/softwareDetail')
+    const licenseId = pathname.endsWith('/softwareLicenseDetail')
         ? searchParams.get('id')
         : null;
 
@@ -42,6 +43,7 @@ export default function Software() {
     }, [status]);
 
     async function fetchData() {
+        let api = '/licenses_with_info/';
         let params = {
             page: paginationModel.page + 1,
             limit: paginationModel.pageSize,
@@ -52,19 +54,30 @@ export default function Software() {
                 status: status.value,
             }
         }
-        const response = await axiosInstance.get('/licenses_with_info/', {
-            params: params,
-        });
-        const data = response.data;
-        setLicenseData(SoftwareLicense.fromArray(data));
+        if (searchFilter && searchKeywords && searchKeywords.length > 0) {
+            api = '/licenses_with_info/search';
+            params = {
+                ...params,
+                search_category: searchFilter,
+                search_value: searchKeywords,
+            }
+        }
+        try {
+            const response = await axiosInstance.get(api, {
+                params: params,
+            });
+            const data = response.data;
+            setLicenseData(SoftwareLicense.fromArray(data));
+        } catch (error) {
+        }
     }
 
-    // 点击「详情」时调用，给当前 URL 加上 ?softwareDetail=xxx
+    // 点击「详情」时调用，给当前 URL 加上 ?softwareLicenseDetail=xxx
     const openDetail = (id) => {
         window.history.pushState(
             null,
             '',
-            `${window.location.pathname}/softwareDetail?id=${id}`
+            `${window.location.pathname}/softwareLicenseDetail?id=${id}`
         );
     };
 
@@ -132,6 +145,9 @@ export default function Software() {
             <FilterSearchBar
                 options={SOFTWARE_SEARCH_OPTIONS}
                 default={SOFTWARE_DEFALUT_SEARCH_OPTIONS}
+                onFilterChange={(event) => {setSearchFilter(event.value)}}
+                onSearchChange={(event) => {setSearchKeywords(event.target.value)}}
+                onSearch={fetchData}
                 placeholder="搜索软件" />
             <DataGrid
                 columns={columns}
@@ -148,12 +164,10 @@ export default function Software() {
                     marginTop: "8px",
                     marginBottom: "8px",
                 }} />
-            <SoftwareDetailDialog
-                open={detailId ?? false}
+            <SoftwareLicenseDetailDialog
+                open={licenseId ?? false}
                 onClose={closeDetail}
-                softwareDetail={detailId
-                    ? licenseData?.find(r => String(r.licenseID) === detailId) ?? null
-                    : null}
+                licenseId={licenseId}
             />
         </Stack>
     );

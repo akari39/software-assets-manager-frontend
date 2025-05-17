@@ -45,7 +45,7 @@ axiosInstance.interceptors.response.use(
       console.error('Unauthorized! Redirecting to login...');
       if (globalErrorHandler) globalErrorHandler("授权失败，请重新登录");
     } else {
-      if (globalErrorHandler) globalErrorHandler(error.response.data.detail || error.message || "发生了一个错误");
+      if (globalErrorHandler) globalErrorHandler(error.response?.data?.detail || error?.message || "发生了一个错误");
     }
     return Promise.reject(error);
   }

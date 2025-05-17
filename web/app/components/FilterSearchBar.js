@@ -22,8 +22,7 @@ export default function FilterSearchBar(props) {
                 label="搜索选项"
                 placeholder='请选择...'
                 variant='standard'
-                onChange={props.onSortChange ?? (() => { })}
-            >
+                onChange={props.onFilterChange ?? (() => { })}>
                 {props.options.map((option) => <MenuItem value={option.value}>{option.name}</MenuItem>)}
             </TextField>
         </FormControl>
