@@ -215,6 +215,13 @@ async def update_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with ID {user_id} not found"
         )
+    
+    db_employee = await session.get(Employee, db_user.employee_id)
+    if not db_employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Associated employee not found"
+        )
 
     update_data = user_in.model_dump(exclude_unset=True)
 
@@ -224,29 +231,30 @@ async def update_user(
         if new_password:
              db_user.hashed_password = get_password_hash(new_password)
 
+    employee_update = update_data.pop("employee", None)
+
     # 更新其他字段
     for key, value in update_data.items():
         setattr(db_user, key, value)
 
+    if employee_update:
+        for key, value in employee_update.items():
+            setattr(db_employee, key, value)
+        session.add(db_employee)
+
+    session.add(db_user)
+
     try:
         await session.commit()
         await session.refresh(db_user)
-
-        # 查询关联的 Employee 信息
-        result = await session.execute(
-            select(Employee).where(Employee.employee_id == db_user.employee_id)
-        )
-        employee = result.scalars().first()
-
-        if not employee:
-            raise HTTPException(status_code=404, detail="Employee info not found")
+        await session.refresh(db_employee)
 
         return UserReadWithEmployee(
             user_id=db_user.user_id,
             employee_id=db_user.employee_id,
             permissions=db_user.permissions,
             status=db_user.status,
-            employee=EmployeeRead.model_validate(employee)
+            employee=EmployeeRead.model_validate(db_employee)
         )
     except Exception as e:
         await session.rollback()

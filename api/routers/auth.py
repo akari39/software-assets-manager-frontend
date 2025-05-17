@@ -43,7 +43,7 @@ async def login(
 
     # 如果用户不存在或密码不正确，抛出异常
     if not user or not verify_password(request.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+        raise HTTPException(status_code=400, detail="错误的工号或密码")
 
     # 生成访问令牌
     access_token = create_access_token(data={"sub": str(user.user_id)})
@@ -59,7 +59,7 @@ async def register(
     # 检查员工是否存在
     employee = await session.get(Employee, request.employee_id)
     if not employee:
-        raise HTTPException(status_code=400, detail="Employee does not exist")
+        raise HTTPException(status_code=400, detail="工号不存在")
 
     # 检查员工是否已经存在用户
     result = await session.execute(
@@ -67,7 +67,7 @@ async def register(
     )
     existing_user = result.scalars().first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=400, detail="用户已注册")
 
     # 哈希密码并创建新用户
     hashed_password = get_password_hash(request.password)
@@ -76,7 +76,7 @@ async def register(
     await session.commit()
     await session.refresh(new_user)
 
-    return {"message": "User registered successfully"}
+    return {"message": "注册成功"}
 
 # 修改密码接口，仅允许已登录用户修改自己的密码
 @router.post("/change-password")
@@ -87,14 +87,14 @@ async def change_password(
 ):
     # 验证旧密码是否正确
     if not verify_password(request.old_password, current_user.hashed_password):
-        raise HTTPException(status_code=400, detail="Old password is incorrect")
+        raise HTTPException(status_code=400, detail="旧密码不正确")
 
     # 更新密码
     current_user.hashed_password = get_password_hash(request.new_password)
     session.add(current_user)
     await session.commit()
 
-    return {"message": "Password changed successfully"}
+    return {"message": "更改成功"}
 
 # 获取当前用户信息的接口
 @router.get("/me", response_model=UserReadWithEmployee)

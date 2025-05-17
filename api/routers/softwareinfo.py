@@ -24,7 +24,12 @@ async def create_software(
 ):
     db_softwareinfo = SoftwareInfo.model_validate(software)  # 将请求体转换为数据库模型
     session.add(db_softwareinfo)  # 添加到数据库会话
-    await session.commit()  # 提交事务
+    try:
+        await session.commit()  # 提交删除事务
+    except SQLAlchemyError as e:
+        await session.rollback()  # 出错时回滚
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")  # 抛出自定义错误信息
+    await session.refresh(db_softwareinfo)  # 刷新对象状态
     await session.refresh(db_softwareinfo)  # 刷新以获取新生成的ID等信息
     return db_softwareinfo  # 返回创建成功的响应
 
@@ -55,7 +60,7 @@ async def get_softwareinfo(
     result = await session.get(SoftwareInfo, softwareinfo_id)  # 查询指定ID的数据
 
     if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SoftwareInfo not found")  # 未找到时抛出异常
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到软件信息")  # 未找到时抛出异常
 
     return result  # 返回查询结果
 
@@ -68,14 +73,18 @@ async def update_softwareinfo(
 ):
     db_softwareinfo = await session.get(SoftwareInfo, softwareinfo_id)  # 获取要更新的对象
     if not db_softwareinfo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SoftwareInfo not found")  # 不存在则抛出异常
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到软件信息")  # 不存在则抛出异常
 
     update_data = software_data.model_dump(exclude_unset=True)  # 排除未设置的字段
     for key, value in update_data.items():
         setattr(db_softwareinfo, key, value)  # 动态更新属性
 
     session.add(db_softwareinfo)  # 添加回话并提交更改
-    await session.commit()
+    try:
+        await session.commit()  # 提交删除事务
+    except SQLAlchemyError as e:
+        await session.rollback()  # 出错时回滚
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")  # 抛出自定义错误信息
     await session.refresh(db_softwareinfo)  # 刷新对象状态
     return db_softwareinfo  # 返回更新后的数据
 
@@ -87,11 +96,11 @@ async def delete_softwareinfo(
 ):
     db_softwareinfo = await session.get(SoftwareInfo, softwareinfo_id)
     if not db_softwareinfo:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SoftwareInfo not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到软件信息")
 
     await session.delete(db_softwareinfo)  # 准备删除操作
     try:
         await session.commit()  # 提交删除事务
     except SQLAlchemyError as e:
         await session.rollback()  # 出错时回滚
-        raise HTTPException(status_code=500, detail="数据库操作失败")  # 抛出自定义错误信息
+        raise HTTPException(status_code=500, detail=f"软件信息删除失败，可能有关联的数据存在： {e}")  # 抛出自定义错误信息

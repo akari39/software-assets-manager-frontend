@@ -28,7 +28,7 @@ async def apply_license(
     # 查询请求中的许可证是否存在
     license_db = await session.get(SoftwareLicense, request.LicenseID)
     if not license_db:
-        raise HTTPException(status_code=404, detail="License not found")
+        raise HTTPException(status_code=404, detail="您请求的授权ID不存在")
 
     # 检查该许可证是否已经被占用
     active_usage = await session.execute(
@@ -38,7 +38,7 @@ async def apply_license(
         )
     )
     if active_usage.scalars().first():
-        raise HTTPException(status_code=409, detail="License is already in use")
+        raise HTTPException(status_code=409, detail="此授权已被使用")
 
     # 查询员工信息
     result = await session.execute(
@@ -47,12 +47,12 @@ async def apply_license(
     employee = result.scalars().first()
 
     if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
+        raise HTTPException(status_code=404, detail="不存在此员工")
 
     if license_db.LvLimit is not None and employee.level < license_db.LvLimit:
         raise HTTPException(
             status_code=403,
-            detail=f"User level {employee.level} does not meet required level {license_db.LvLimit}"
+            detail=f"您的职级 {employee.level} 不满足领用需求"
         )
 
     # 设置借出时间和归还时间
@@ -82,7 +82,7 @@ async def apply_license(
         return new_record
     except Exception as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database operation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 
 @router.post("/return", response_model=LicensesUsageRecordRead, status_code=status.HTTP_200_OK)
@@ -96,18 +96,18 @@ async def return_license_by_usage_id(
     # 查询使用记录
     usage_record = await session.get(LicensesUsageRecord, record_id)
     if not usage_record:
-        raise HTTPException(status_code=404, detail="Usage record not found")
+        raise HTTPException(status_code=404, detail="没有找到使用记录")
 
     # 确保当前用户有权限归还该许可证
     if usage_record.UserID != current_user.user_id:
         raise HTTPException(
             status_code=403,
-            detail="You do not have permission to return this license"
+            detail="不能归还非本人的授权"
         )
 
     # 确认该许可证尚未被归还
     if usage_record.Actually_Return_Time is not None:
-        raise HTTPException(status_code=400, detail="License has already been returned")
+        raise HTTPException(status_code=400, detail="无法归还已经归还的授权")
 
     # 更新实际归还时间和过期状态
     usage_record.Actually_Return_Time = datetime.now(timezone.utc)
@@ -128,7 +128,7 @@ async def return_license_by_usage_id(
         return usage_record
     except Exception as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database operation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 
 @router.post("/renew", response_model=LicensesUsageRecordRead, status_code=status.HTTP_200_OK)
@@ -137,23 +137,34 @@ async def renew_license(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
 ):
-    record_id = request.RecordID
+    license_id = request.RecordID
 
-    # 查询使用记录
-    usage_record = await session.get(LicensesUsageRecord, record_id)
-    if not usage_record:
-        raise HTTPException(status_code=404, detail="Usage record not found")
+
+    record_statement = (
+        select(LicensesUsageRecord)
+        .where(
+            LicensesUsageRecord.LicenseID == license_id,
+            LicensesUsageRecord.Actually_Return_Time.is_(None)
+        )
+        .order_by(LicensesUsageRecord.Checkout_time.desc())
+        .limit(1)
+    )
+
+    result_records = await session.execute(record_statement)
+    usage_record = result_records.scalars().first()
+    if  not usage_record:
+        raise HTTPException(status_code=404, detail=f"授权ID：{license_id}没被领用")
 
     # 确保当前用户有权限续借该许可证
     if usage_record.UserID != current_user.user_id:
         raise HTTPException(
             status_code=403,
-            detail="You do not have permission to renew this license"
+            detail="不能更新非本人的授权"
         )
 
     # 确认该许可证尚未被归还
     if usage_record.Actually_Return_Time is not None:
-        raise HTTPException(status_code=400, detail="Cannot renew a returned license")
+        raise HTTPException(status_code=400, detail="无法续期已经归还的授权")
 
     # 更新归还时间
     new_return_time = usage_record.Return_Time + timedelta(days=request.Renew_Days)
@@ -167,4 +178,4 @@ async def renew_license(
         return usage_record
     except Exception as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database operation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")

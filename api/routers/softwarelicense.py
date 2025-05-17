@@ -33,7 +33,7 @@ async def create_license(
         return db_license
     except SQLAlchemyError as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database commit failed: {e}")
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 # 获取所有软件许可证列表，支持按授权类型、状态和关联软件ID筛选分页查询
 @router.get("/", response_model=List[SoftwareLicenseRead])
@@ -71,7 +71,7 @@ async def read_license(
     if not db_license:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Software license with ID {license_id} not found"
+            detail=f"软件授权ID {license_id} 不存在"
         )
     return db_license
 
@@ -86,7 +86,7 @@ async def update_license(
     if not db_license:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Software license with ID {license_id} not found"
+            detail=f"软件授权ID {license_id} 不存在"
         )
 
     update_data = license_in.model_dump(exclude_unset=True)
@@ -103,7 +103,7 @@ async def update_license(
         return db_license
     except SQLAlchemyError as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database commit failed: {e}")
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 # 删除指定ID的软件许可证
 @router.delete("/{license_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -115,7 +115,7 @@ async def delete_license(
     if not db_license:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Software license with ID {license_id} not found"
+            detail=f"软件授权ID {license_id} 不存在"
         )
 
     await session.delete(db_license)
@@ -124,4 +124,4 @@ async def delete_license(
         return None
     except SQLAlchemyError as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database delete failed: {e}")
+        raise HTTPException(status_code=500, detail=f"授权删除失败，可能有关联的数据存在: {e}")

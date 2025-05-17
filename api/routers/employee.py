@@ -26,7 +26,7 @@ async def create_employee(
     if existing_employee:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Employee with ID '{employee_in.employee_id}' already exists."
+            detail=f"工号 '{employee_in.employee_id}' 已存在"
         )
 
     # 创建新员工实例并保存到数据库
@@ -40,11 +40,11 @@ async def create_employee(
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Employee with ID '{employee_in.employee_id}' already exists or another integrity error occurred."
+            detail=f"工号 '{employee_in.employee_id}' 已存在或遇到数据一致性错误"
         )
     except Exception as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 # 获取所有员工列表，支持按部门、状态分页查询
 @router.get("/", response_model=List[EmployeeRead])
@@ -79,7 +79,7 @@ async def read_employee(
     if not db_employee:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Employee with ID '{employee_id}' not found"
+            detail=f"工号 '{employee_id}' 不存在"
         )
     return db_employee
 
@@ -94,7 +94,7 @@ async def update_employee(
     if not db_employee:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Employee with ID '{employee_id}' not found"
+            detail=f"工号 '{employee_id}' 不存在"
         )
 
     update_data = employee_in.model_dump(exclude_unset=True)
@@ -108,7 +108,7 @@ async def update_employee(
         return db_employee
     except Exception as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 # 删除指定 employee_id 的员工
 @router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -120,7 +120,7 @@ async def delete_employee(
     if not db_employee:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Employee with ID '{employee_id}' not found"
+            detail=f"工号 '{employee_id}' 不存在"
         )
 
     await session.delete(db_employee)
@@ -129,7 +129,7 @@ async def delete_employee(
         return None
     except IntegrityError as e:
         await session.rollback()
-        raise HTTPException(status_code=409, detail=f"Cannot delete employee. Check related records (e.g., user accounts). Error: {e}")
+        raise HTTPException(status_code=409, detail=f"无法删除用户，有关联的数据存在 Error: {e}")
     except Exception as e:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+        raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
