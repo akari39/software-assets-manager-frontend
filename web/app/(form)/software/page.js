@@ -43,7 +43,7 @@ export default function Software() {
     }, [status]);
 
     async function fetchData() {
-        let api = status.value === 1 ? '/licenses_with_info/used_license' : '/licenses_with_info/';
+        let api = status.value === 1 ? '/licenses_with_info/used_license' : '/licenses_with_info';
         let params = {
             page: paginationModel.page + 1,
             limit: paginationModel.pageSize,
@@ -53,6 +53,7 @@ export default function Software() {
                 ...params,
             }
         }
+        console.log(searchFilter, searchKeywords)
         if (searchFilter && searchKeywords && searchKeywords.length > 0) {
             api = `${api}/search`;
             params = {

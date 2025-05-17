@@ -26,9 +26,6 @@ export default function DashboardItem({ number, title, href, tintColor }) {
                     </Stack>
                 </Stack>
                 <Box sx={{ height: "32px" }} />
-                {href != null && href != undefined ?
-                    <Link href={href}>详情</Link>
-                    : <></>}
             </Stack>
         </Card>
     );
