@@ -27,13 +27,6 @@ DATABASE_URL = os.getenv(
 print(DATABASE_URL)
 engine = create_async_engine(DATABASE_URL, echo=True)
 
-
-print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-print("Sleeping for 5 seconds...")
-time.sleep(5)
-print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-print("Sleep complete.")
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
