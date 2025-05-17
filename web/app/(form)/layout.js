@@ -8,7 +8,7 @@ import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import SsidChartIcon from '@mui/icons-material/SsidChart';
 import PersonIcon from '@mui/icons-material/Person';
 import axiosInstance from '../service/axiosConfig';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AppsIcon from '@mui/icons-material/Apps';
 import { NextAppProvider } from '@toolpad/core/nextjs';
@@ -55,6 +55,7 @@ export function getTitleByPath(pathname) {
 
 export default function FormLayout({ children }) {
     const [session, setSession] = useState('');
+    const router = useRouter();
 
     useEffect(() => {
         (async () => {
@@ -76,10 +77,11 @@ export default function FormLayout({ children }) {
     const authentication = useMemo(() => {
         return {
             signIn: () => {
-                redirect('/auth/signin');
+                router.replace('/auth/signin');
             },
             signOut: () => {
                 signOutAction();
+                router.replace('/auth/signin');
             },
         };
     }, []);
