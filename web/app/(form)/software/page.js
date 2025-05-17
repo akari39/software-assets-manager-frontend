@@ -4,8 +4,8 @@ import FilterSearchBar from "@/app/components/FilterSearchBar";
 import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
 import axiosInstance from "@/app/service/axiosConfig";
-import { Link, Stack } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
+import { Link, Stack, Box, Paper } from "@mui/material";
+import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
 import SoftwareLicenseDetailDialog from "./softwareLicenseDetail/SoftwareLicenseDetailDialog";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -43,7 +43,7 @@ export default function Software() {
     }, [status]);
 
     async function fetchData() {
-        let api = '/licenses_with_info/';
+        let api = status.value === 1 ? '/licenses_with_info/used_license' : '/licenses_with_info/';
         let params = {
             page: paginationModel.page + 1,
             limit: paginationModel.pageSize,
@@ -51,7 +51,6 @@ export default function Software() {
         if (status?.value) {
             params = {
                 ...params,
-                status: status.value,
             }
         }
         if (searchFilter && searchKeywords && searchKeywords.length > 0) {
@@ -126,15 +125,6 @@ export default function Software() {
         },
     ]);
 
-    function SoftwareAssetsGridToolbar() {
-        return (
-            <GridToolbar
-                csvOptions={{
-                    utf8WithBom: true,
-                }}
-            />
-        );
-    }
 
     return (
         <Stack direction="column" >
@@ -149,26 +139,29 @@ export default function Software() {
                 onSearchChange={(event) => {setSearchKeywords(event.target.value)}}
                 onSearch={fetchData}
                 placeholder="搜索软件" />
-            <DataGrid
-                columns={columns}
-                slots={{ toolbar: SoftwareAssetsGridToolbar }}
-                paginationModel={paginationModel}
-                onPaginationModelChange={(model) => setPaginationModel(model)}
-                getRowId={(row) => row.licenseID}
-                rowCount={(licenseData ?? []).length}
-                paginationMode="server"
-                rows={licenseData}
-                sx={{
-                    marginLeft: "32px",
-                    marginRight: "32px",
-                    marginTop: "8px",
-                    marginBottom: "8px",
-                }} />
-            <SoftwareLicenseDetailDialog
-                open={licenseId ?? false}
-                onClose={closeDetail}
-                licenseId={licenseId}
-            />
+            {licenseData !== null &&
+                <DataGrid
+                    columns={columns}
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={setPaginationModel}
+                    getRowId={(row) => row.licenseID}
+                    rowCount={licenseData.length}
+                    paginationMode="server"
+                    rows={licenseData}
+                    sx={{
+                        marginLeft: "32px",
+                        marginRight: "32px",
+                        marginTop: "8px",
+                        marginBottom: "8px",
+                    }} />
+            }
+            {licenseId &&
+                <SoftwareLicenseDetailDialog
+                    open={!!licenseId}
+                    onClose={closeDetail}
+                    licenseId={licenseId}
+                />
+            }
         </Stack>
     );
 }
