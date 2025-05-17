@@ -83,7 +83,7 @@ async def get_current_user(
     try:
         # 解码 JWT token
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print("@!!!!!!!!!!!@@@@@@@@@@@@@@!!!!!!!!!!!!!"+payload)
+        #print("@!!!!!!!!!!!@@@@@@@@@@@@@@!!!!!!!!!!!!!"+payload)
         user_id_str: Optional[str] = payload.get("sub")  # 提取用户 ID 字符串
         if user_id_str is None:
             raise credentials_exception  # 用户 ID 不存在则抛出异常
@@ -93,7 +93,7 @@ async def get_current_user(
             raise credentials_exception  # 转换失败也抛出异常
     except JWTError:
         raise credentials_exception  # JWT 解码失败时抛出异常
-
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"+user_id)
     # 查询数据库中的用户
     query = select(User, Employee).join(Employee)
     if user_id:
