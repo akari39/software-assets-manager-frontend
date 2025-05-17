@@ -79,7 +79,7 @@ async def get_licenses_list_manual_join(
         from collections import defaultdict
         grouped_records = defaultdict(list)
         for r in records_db:
-            grouped_records(r.LicenseID).append(r)
+            grouped_records[r.LicenseID].append(r)
 
         # 取每个 license 的第一条（最新）
         for lid in license_ids:
