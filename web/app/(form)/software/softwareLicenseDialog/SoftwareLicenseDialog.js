@@ -67,12 +67,12 @@ export default function SoftwareLicenseDialog({ open, onClose, licenseId }) {
             setSoftwareInfoID(lic.softwareInfoID);
             setLicenseType(lic.licenseType);
             setLicenseStatus(lic.licenseStatus);
-            setLicenseKey(lic.licenseKey? lic.licenseKey : null);
+            setLicenseKey(lic.licenseKey ?? '');
             setLicenseExpiredDate(
                 lic.licenseExpiredDate?.slice(0, 16) ?? ''
             ); // for datetime-local
             setLvLimit(lic.lvLimit);
-            setRemark(lic.remark? lic.remark : null);
+            setRemark(lic.remark ?? '');
         } catch (err) {
             console.error('Fetch license failed', err);
         } finally {
