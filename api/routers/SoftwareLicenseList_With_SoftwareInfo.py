@@ -125,7 +125,7 @@ async def search_licenses_with_info(
     query = select(SoftwareLicense, SoftwareInfo).outerjoin(
         SoftwareInfo, SoftwareLicense.SoftwareInfoID == SoftwareInfo.SoftwareInfoID
     )
-    user =   User(Depends(get_current_user))
+    user =  User(Depends(get_current_user))
 
     try:
         # 根据搜索类别添加不同的过滤条件
@@ -171,7 +171,7 @@ async def search_licenses_with_info(
 
 @router.get("/used_license", response_model=List[SoftwareLicenseReadWithInfo])
 async def used_licenses(
-    userid: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
     license_type: Optional[int] = Query(None, description="按授权模式筛选"),
     software_id: Optional[int] = Query(None, description="按关联软件ID筛选"),
@@ -184,7 +184,7 @@ async def used_licenses(
     record_statement = (
         select(LicensesUsageRecord)
         .where(
-            LicensesUsageRecord.UserID == userid.user_id,
+            LicensesUsageRecord.UserID == user.user_id,
             LicensesUsageRecord.Actually_Return_Time.is_(None)
         )
         .order_by(LicensesUsageRecord.Checkout_time.desc())
