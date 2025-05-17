@@ -9,8 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.user import User
 from models.employee import Employee
 from utils.PwdHash import get_password_hash
-from test_user import DEFAULT_ADMIN #for_test_only
 
+DEFAULT_ADMIN = {
+    "employee_id": "admin",
+    "password": "adminpassword",
+    "name": "Administrator",
+    "department": "IT",
+    "level": 5,
+    "status": 0
+}
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql+asyncpg://postgres:huiji.233@localhost:5433/dev"
