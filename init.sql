@@ -162,7 +162,7 @@ INSERT INTO software_info ("SoftwareInfoName", "SoftwareInfoType", "SoftwareInfo
 ('Salesforce Sales Cloud', 5, 'CRM platform'),
 ('Tableau Desktop', 5, 'data visualization'),
 ('MATLAB', 2, 'numerical computing environment'),
-('SAP S/4HANA', 5, 'ERP system')
+('SAP S/4HANA', 5, 'ERP system');
 
 -- Step 9: 插入 software_license 数据
 DO $$
