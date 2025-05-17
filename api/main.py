@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.user import User
 from models.employee import Employee
 from utils.PwdHash import get_password_hash
-from test_user import TEST_USERS, DEFAULT_ADMIN #for_test_only
+from test_user import DEFAULT_ADMIN #for_test_only
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
