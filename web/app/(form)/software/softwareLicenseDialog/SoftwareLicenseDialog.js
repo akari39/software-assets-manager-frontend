@@ -61,18 +61,18 @@ export default function SoftwareLicenseDialog({ open, onClose, licenseId }) {
     async function fetchLicense() {
         setLoading(true);
         try {
-            const { data } = await axiosInstance.get(`/licenses/${licenseId}`);
+            const { data } = await axiosInstance.get(`/softwarelicense/${licenseId}`);
             const lic = new SoftwareLicense(data);
             setLicenseDetail(lic);
             setSoftwareInfoID(lic.softwareInfoID);
             setLicenseType(lic.licenseType);
             setLicenseStatus(lic.licenseStatus);
-            setLicenseKey(lic.licenseKey);
+            setLicenseKey(lic.licenseKey? lic.licenseKey : null);
             setLicenseExpiredDate(
                 lic.licenseExpiredDate?.slice(0, 16) ?? ''
             ); // for datetime-local
             setLvLimit(lic.lvLimit);
-            setRemark(lic.remark);
+            setRemark(lic.remark? lic.remark : null);
         } catch (err) {
             console.error('Fetch license failed', err);
         } finally {
@@ -92,9 +92,9 @@ export default function SoftwareLicenseDialog({ open, onClose, licenseId }) {
         };
         try {
             if (isCreate) {
-                await axiosInstance.post('/licenses', payload);
+                await axiosInstance.post('/softwarelicense', payload);
             } else {
-                await axiosInstance.put(`/licenses/${licenseId}`, payload);
+                await axiosInstance.put(`/softwarelicense/${licenseId}`, payload);
             }
             onClose();
         } catch (err) {
