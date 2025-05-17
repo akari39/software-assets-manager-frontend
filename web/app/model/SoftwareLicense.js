@@ -1,12 +1,4 @@
-export class SoftwareInfo {
-  constructor(data) {
-    this.softwareInfoName = data.SoftwareInfoName;
-    this.softwareInfoType = data.SoftwareInfoType;
-    this.softwareInfoMatchRule = data.SoftwareInfoMatchRule;
-    this.softwareInfoID = data.SoftwareInfoID;
-  }
-}
-
+import SoftwareInfo from "@/app/model/SoftwareInfo";
 export const LICENSE_STATUS = {
   1: "已领用",
   0: "未领用",

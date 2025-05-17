@@ -4,7 +4,7 @@ import FilterSearchBar from "@/app/components/FilterSearchBar";
 import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
 import axiosInstance from "@/app/service/axiosConfig";
-import { Link, Stack, Box, Paper } from "@mui/material";
+import { Box, CircularProgress, Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
 import SoftwareLicenseDetailDialog from "./softwareLicenseDetail/SoftwareLicenseDetailDialog";
@@ -13,7 +13,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 const SOFTWARE_SEARCH_OPTIONS = [
     { value: "software_name", name: "软件名称" },
-    { value: "software_id", name: "软件ID" },
+    { value: "software_info_id", name: "软件ID" },
 ];
 
 const SOFTWARE_DEFALUT_SEARCH_OPTIONS = SOFTWARE_SEARCH_OPTIONS[0];
@@ -54,7 +54,7 @@ export default function Software() {
             }
         }
         if (searchFilter && searchKeywords && searchKeywords.length > 0) {
-            api = '/licenses_with_info/search';
+            api = `${api}/search`;
             params = {
                 ...params,
                 search_category: searchFilter,
@@ -68,6 +68,7 @@ export default function Software() {
             const data = response.data;
             setLicenseData(SoftwareLicense.fromArray(data));
         } catch (error) {
+            console.log(error)
         }
     }
 
@@ -135,11 +136,22 @@ export default function Software() {
             <FilterSearchBar
                 options={SOFTWARE_SEARCH_OPTIONS}
                 default={SOFTWARE_DEFALUT_SEARCH_OPTIONS}
-                onFilterChange={(event) => {setSearchFilter(event.value)}}
-                onSearchChange={(event) => {setSearchKeywords(event.target.value)}}
+                onFilterChange={(event) => { setSearchFilter(event.value) }}
+                onSearchChange={(event) => { setSearchKeywords(event.target.value) }}
                 onSearch={fetchData}
                 placeholder="搜索软件" />
-            {licenseData !== null &&
+            {licenseData === null ?
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: 400,
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+                :
                 <DataGrid
                     columns={columns}
                     paginationModel={paginationModel}
@@ -153,7 +165,7 @@ export default function Software() {
                         marginRight: "32px",
                         marginTop: "8px",
                         marginBottom: "8px",
-                    }} />
+                    }} /> 
             }
             {licenseId &&
                 <SoftwareLicenseDetailDialog
