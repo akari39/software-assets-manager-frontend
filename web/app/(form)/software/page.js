@@ -39,6 +39,9 @@ export default function Software() {
 
     const [createOpen, setCreateOpen] = useState(false);
 
+    const editId = pathname.endsWith('/softwareLicenseEdit') ? searchParams.get('id') : null;
+
+
     useEffect(() => { fetchData(); }, [status, paginationModel.page, paginationModel.pageSize]);
 
     async function fetchData() {
@@ -56,8 +59,8 @@ export default function Software() {
             console.error(err);
         }
     }
-
     const openDetail = (id) => {
+        setCreateOpen(false); //确保非新建状态
         window.history.pushState(null, '', `${window.location.pathname}/softwareLicenseDetail?id=${id}`);
     };
     const closeDetail = () => {
@@ -66,12 +69,23 @@ export default function Software() {
     };
 
     const openEdit = (id) => {
+        setCreateOpen(false); //确保非新建状态
         window.history.pushState(null, '', `${window.location.pathname}/softwareLicenseEdit?id=${id}`);
     };
     const closeEdit = () => {
         window.history.pushState(null, '', '/software');
         setCreateOpen(false)
         fetchData();
+    };
+
+    const handleOpenCreateDialog = () => {
+        setCreateOpen(true);
+    };
+    
+    const closeSoftwareLicenseDialog = () => {
+        setCreateOpen(false);
+        window.history.pushState(null, '', '/software');
+        fetchData(); // 刷新数据
     };
 
     const columns = useMemo(() => [
@@ -86,7 +100,7 @@ export default function Software() {
                 <GridActionsCellItem icon={<Link>编辑</Link>} label="编辑" onClick={() => openEdit(params.row.licenseID)} disableRipple />
             ]
         }
-    ], []);
+    ], [status, paginationModel]);
 
     return (
         <Stack direction="column" spacing={2} sx={{ p: 2 }}>
@@ -101,7 +115,7 @@ export default function Software() {
                     placeholder="搜索软件"
                 />
                 <Box>
-                    <Button variant="contained" disableElevation sx={{ mt: 1 }} onClick={() => setCreateOpen(true)}>
+                    <Button variant="contained" disableElevation sx={{ mt: 1 }} onClick={handleOpenCreateDialog}>
                         新建授权
                     </Button>
                 </Box>
@@ -127,7 +141,7 @@ export default function Software() {
             {/* 详情对话框 */}
             {detailId && <SoftwareLicenseDetailDialog open onClose={closeDetail} licenseId={detailId} />}
             {/* 编辑/创建对话框 */}
-            <SoftwareLicenseDialog open={createOpen || !!searchParams.get('id')} onClose={closeEdit} licenseId={searchParams.get('id')} />
+            <SoftwareLicenseDialog open={createOpen || !!editId} onClose={closeSoftwareLicenseDialog} licenseId={editId} />
         </Stack>
     );
 }
