@@ -30,7 +30,7 @@ engine = create_async_engine(DATABASE_URL, echo=True)
 
 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 print("Sleeping for 5 seconds...")
-time.sleep(10)
+time.sleep(5)
 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 print("Sleep complete.")
 
@@ -69,7 +69,6 @@ async def lifespan(app: FastAPI):
                     status=0
                 )
                 session.add(admin_user)
-                await session.commit()
                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 print("✅ Default admin account created.")
                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -96,6 +95,7 @@ async def lifespan(app: FastAPI):
                         ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                         print(f"⚠️ {test_id} does not exist. Skipping password update.")
                         ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                await session.commit()                        
 
             else:
                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
