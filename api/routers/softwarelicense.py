@@ -9,6 +9,7 @@ from datetime import date, datetime, timezone
 from dependencies import get_session
 from models.softwarelicense import SoftwareLicense
 from schemas.softwarelicense import SoftwareLicenseCreate, SoftwareLicenseRead, SoftwareLicenseUpdate
+from utils.jwt import get_current_user, get_current_admin
 
 # 创建一个API路由实例，前缀为/softwarelicense，用于处理软件许可证相关请求
 router = APIRouter(
@@ -106,7 +107,7 @@ async def update_license(
         raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 # 删除指定ID的软件许可证
-@router.delete("/{license_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{license_id}", status_code=status.HTTP_204_NO_CONTENT,dependencies= Depends(get_current_admin))
 async def delete_license(
     license_id: int,
     session: AsyncSession = Depends(get_session)

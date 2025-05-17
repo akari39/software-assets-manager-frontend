@@ -3,7 +3,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
-
+from utils.jwt import get_current_admin
 from dependencies import get_session
 from models.employee import Employee
 from schemas.employee import EmployeeCreate, EmployeeRead, EmployeeUpdate
@@ -111,7 +111,7 @@ async def update_employee(
         raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 # 删除指定 employee_id 的员工
-@router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=Depends(get_current_admin))
 async def delete_employee(
     employee_id: str, 
     session: AsyncSession = Depends(get_session)
