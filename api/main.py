@@ -1,3 +1,4 @@
+import asyncio
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +31,9 @@ engine = create_async_engine(DATABASE_URL, echo=True)
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+
+    print("开始等待")
+    await asyncio.sleep(10)
 
     async with AsyncSession(engine) as session:
         async with session.begin():
