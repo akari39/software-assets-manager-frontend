@@ -192,6 +192,40 @@ async def read_user_by_employee_id(
         employee=EmployeeRead.model_validate(employee)
     )
 
+@router.get("/search", response_model=List[UserReadWithEmployee])
+async def search_users(
+    search_type: str = Query(..., description="搜索类型 (name|employee_id)"),
+    search_value: str = Query(..., description="搜索值"),
+    page: int = Query(1, ge=1, description="页码"),
+    limit: int = Query(20, ge=1, le=100, description="每页数量"),
+    session: AsyncSession = Depends(get_session)
+):
+    offset = (page - 1) * limit
+    query = select(User, Employee).join(Employee)
+
+    # 根据搜索类型构建过滤条件
+    if search_type == "name":
+        query = query.where(Employee.name.ilike(f"%{search_value}%"))
+    elif search_type == "employee_id":
+        query = query.where(Employee.employee_id.ilike(f"%{search_value}%"))
+    else:
+        raise HTTPException(status_code=400, detail="无效的搜索类型。支持 'name' 或 'employee_id'")
+
+    # 分页处理
+    result = await session.execute(query.offset(offset).limit(limit).order_by(User.user_id))
+    users_with_employees = result.all()
+
+    return [
+        UserReadWithEmployee(
+            user_id=user.user_id,
+            employee_id=user.employee_id,
+            permissions=user.permissions,
+            status=user.status,
+            employee=EmployeeRead.model_validate(employee)
+        )
+        for user, employee in users_with_employees
+    ]
+
 @router.put("/{user_id}", response_model=UserReadWithEmployee)
 async def update_user(
     user_id: int,
