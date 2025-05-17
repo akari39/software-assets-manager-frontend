@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:huiji.233@localhost:5432/dev"
+    "postgresql+asyncpg://postgres:huiji.233@localhost:5433/dev"
 )
 print(DATABASE_URL)
 engine = create_async_engine(DATABASE_URL, echo=True)
@@ -53,3 +53,6 @@ app.include_router(auth)
 
 from routers.licenses_usage_record import router as licenses_usage_record
 app.include_router(licenses_usage_record)
+
+from routers.dashboard import router as dashboard
+app.include_router(dashboard)

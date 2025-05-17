@@ -24,7 +24,7 @@ class SoftwareLicenseBase(SQLModel):
         description="授权过期时间 (NULL 表示永久)",
         sa_type=TIMESTAMP(timezone=True)
         )
-    LvLimit: Optional[int] = Field(default=None, description="允许使用的最低职级")
+    LvLimit: Optional[int] = Field(default= 0, description="允许使用的最低职级")
     Remark: Optional[str] = Field(default=None, description="备注")
 
 class SoftwareLicense(SoftwareLicenseBase, table=True):

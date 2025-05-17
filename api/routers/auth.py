@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from utils.jwt import create_access_token, verify_password
-from models.user import User, UserResponse
+from models.user import User, UserResponse, UserReadWithEmployee
 from dependencies import get_session
 from pydantic import BaseModel
 from utils.jwt import get_current_user
@@ -97,6 +97,6 @@ async def change_password(
     return {"message": "Password changed successfully"}
 
 # 获取当前用户信息的接口
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=UserReadWithEmployee)
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user

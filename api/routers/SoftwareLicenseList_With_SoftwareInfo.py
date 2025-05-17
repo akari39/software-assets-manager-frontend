@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Dict, Tuple
+from models.user import User
+from utils.jwt import get_current_user
 from schemas.licenses_usage_record import LicensesUsageRecordRead
 from models.licenses_usage_record import LicensesUsageRecord
 from dependencies import get_session  # 获取数据库会话的依赖
@@ -22,20 +24,24 @@ router = APIRouter(
 @router.get("/", response_model=List[SoftwareLicenseReadWithInfo])
 async def get_licenses_list_manual_join(
     license_type: Optional[int] = Query(None, description="按授权模式筛选"),
-    status_filter: Optional[int] = Query(None, alias="status", description="按当前状态筛选"),
+    status_filter: Optional[int] = Query(None, alias="status", description="按当前状态筛选,非管理使用时固定为0"),
     software_id: Optional[int] = Query(None, description="按关联软件ID筛选"),
     page: int = Query(1, ge=1, description="页码"),
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
     session: AsyncSession = Depends(get_session)
 ):
-
+    user =  User(Depends(get_current_user))
     offset = (page - 1) * limit
     license_statement = select(SoftwareLicense)
 
     if license_type is not None:
         license_statement = license_statement.where(SoftwareLicense.LicenseType == license_type)
     if status_filter is not None:
-        license_statement = license_statement.where(SoftwareLicense.LicenseStatus == status_filter)
+        if user.permissions == 0:
+            status_filter_statement = 0
+        else:
+            status_filter_statement = status_filter
+        license_statement = license_statement.where(SoftwareLicense.LicenseStatus == status_filter_statement)
     if software_id is not None:
         license_statement = license_statement.where(SoftwareLicense.SoftwareInfoID == software_id)
 
@@ -104,11 +110,10 @@ async def get_licenses_list_manual_join(
 # 搜索授权信息接口
 @router.get("/search", response_model=List[SoftwareLicenseReadWithInfo])
 async def search_licenses_with_info(
-    search_category: str = Query(..., description="搜索类别（例如：software_name, software_type, license_type, license_status）"),
+    search_category: str = Query(..., description="搜索类别（例如：software_name, software_info_id）"),
     search_value: str = Query(..., description="搜索值（对名称不区分大小写）"),
-    license_type: Optional[int] = Query(None, description="按授权模式筛选 (可与搜索结合)"),
-    status_filter: Optional[int] = Query(None, alias="status", description="按当前状态筛选 (可与搜索结合)"),
-    software_id: Optional[int] = Query(None, description="按关联软件ID筛选 (可与搜索结合)"),
+    license_type: Optional[int] = Query(None, description="按授权模式筛选，非管理员固定为0"),
+    status_filter: Optional[int] = Query(None, alias="status", description="按当前状态筛选"),
     page: int = Query(1, ge=1, description="页码"),
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
     session: AsyncSession = Depends(get_session)
@@ -120,17 +125,14 @@ async def search_licenses_with_info(
     query = select(SoftwareLicense, SoftwareInfo).outerjoin(
         SoftwareInfo, SoftwareLicense.SoftwareInfoID == SoftwareInfo.SoftwareInfoID
     )
+    user =   User(Depends(get_current_user))
 
     try:
         # 根据搜索类别添加不同的过滤条件
         if search_category == "software_name":
             query = query.where(SoftwareInfo.SoftwareInfoName.ilike(f"%{search_value}%"))
-        elif search_category == "software_type":
-            query = query.where(SoftwareInfo.SoftwareInfoType == int(search_value))
-        elif search_category == "license_type":
-            query = query.where(SoftwareLicense.LicenseType == int(search_value))
-        elif search_category == "license_status":
-            query = query.where(SoftwareLicense.LicenseStatus == int(search_value))
+        elif search_category == "software_info_id":
+            query = query.where(SoftwareInfo.SoftwareInfoID == int(search_value))
         else:
             raise HTTPException(status_code=400, detail=f"无效的搜索类别: {search_category}")
     except ValueError:
@@ -141,10 +143,12 @@ async def search_licenses_with_info(
     # 添加额外的过滤条件
     if license_type is not None:
         query = query.where(SoftwareLicense.LicenseType == license_type)
-    if status_filter is not None:
-        query = query.where(SoftwareLicense.LicenseStatus == status_filter)
-    if software_id is not None:
-        query = query.where(SoftwareLicense.SoftwareInfoID == software_id)
+
+    if user.permissions == 1:
+        if status_filter is not None:
+            query = query.where(SoftwareLicense.LicenseStatus == status_filter)
+    else:
+        query = query.where(SoftwareLicense.LicenseStatus == 0)
 
     # 排序并添加分页限制
     query = query.order_by(SoftwareLicense.LicenseID).offset(offset).limit(limit)
@@ -164,6 +168,83 @@ async def search_licenses_with_info(
         combined_results.append(combined)
 
     return combined_results  # 返回组合后的结果
+
+@router.get("/used_license", response_model=List[SoftwareLicenseReadWithInfo])
+async def used_licenses(
+    userid: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+    license_type: Optional[int] = Query(None, description="按授权模式筛选"),
+    software_id: Optional[int] = Query(None, description="按关联软件ID筛选"),
+    page: int = Query(1, ge=1, description="页码"),
+    limit: int = Query(20, ge=1, le=100, description="每页数量"),
+):
+    offset = (page - 1) * limit
+
+    # 查询当前用户正在使用的授权记录
+    record_statement = (
+        select(LicensesUsageRecord)
+        .where(
+            LicensesUsageRecord.UserID == userid.user_id,
+            LicensesUsageRecord.Actually_Return_Time.is_(None)
+        )
+        .order_by(LicensesUsageRecord.Checkout_time.desc())
+    )
+
+    result_records = await session.execute(record_statement)
+    records_db = result_records.scalars().all()
+
+    if not records_db:
+        return []
+
+    license_ids = [record.LicenseID for record in records_db]
+
+    # 查询对应的软件授权信息
+    license_statement = select(SoftwareLicense).where(SoftwareLicense.LicenseID.in_(license_ids))
+
+    if license_type is not None:
+        license_statement = license_statement.where(SoftwareLicense.LicenseType == license_type)
+    if software_id is not None:
+        license_statement = license_statement.where(SoftwareLicense.SoftwareInfoID == software_id)
+
+    license_result = await session.execute(
+        license_statement.offset(offset).limit(limit).order_by(SoftwareLicense.LicenseID)
+    )
+    licenses_db = license_result.scalars().all()
+
+    if not licenses_db:
+        return []
+
+    # 获取 SoftwareInfo
+    software_info_ids = {lic.SoftwareInfoID for lic in licenses_db if lic.SoftwareInfoID is not None}
+    software_info_map = {}
+    if software_info_ids:
+        info_result = await session.execute(
+            select(SoftwareInfo).where(SoftwareInfo.SoftwareInfoID.in_(software_info_ids))
+        )
+        for info in info_result.scalars().all():
+            software_info_map[info.SoftwareInfoID] = SoftwareInfoRead.model_validate(info)
+
+    # 构建 usage_records 映射
+    usage_records_map = {
+        record.LicenseID: LicensesUsageRecordRead.model_validate(record)
+        for record in records_db
+    }
+
+    # 组合数据
+    combined_results = []
+    for license_db in licenses_db:
+        lic_data = SoftwareLicenseRead.model_validate(license_db)
+        info_data = software_info_map.get(license_db.SoftwareInfoID)
+        record_data = usage_records_map.get(license_db.LicenseID)
+
+        combined = SoftwareLicenseReadWithInfo(
+            **lic_data.model_dump(),
+            software_info=info_data,
+            latest_usage_record=record_data
+        )
+        combined_results.append(combined)
+
+    return combined_results
 
 
 # 获取单个授权信息接口

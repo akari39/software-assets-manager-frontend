@@ -6,7 +6,9 @@ from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.user import User
+from schemas.employee import EmployeeRead
+from models.user import User, UserReadWithEmployee
+from models.employee import Employee
 from dependencies import get_session
 from passlib.context import CryptContext
 import os
@@ -82,6 +84,7 @@ async def get_current_user(
         # 解码 JWT token
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id_str: Optional[str] = payload.get("sub")  # 提取用户 ID 字符串
+        print(user_id_str)
         if user_id_str is None:
             raise credentials_exception  # 用户 ID 不存在则抛出异常
         try:
@@ -92,11 +95,23 @@ async def get_current_user(
         raise credentials_exception  # JWT 解码失败时抛出异常
 
     # 查询数据库中的用户
-    result = await session.execute(select(User).where(User.user_id == user_id))
-    user = result.scalars().first()
-    if user is None:
-        raise credentials_exception  # 用户不存在时抛出异常
-    return user
+    query = select(User, Employee).join(Employee)
+    if user_id:
+        query = query.where(User.user_id == user_id)
+    result = await session.execute(query)
+    row = result.first()
+    if not row:
+        raise credentials_exception  # 用户不存在则抛出异常
+    
+    user, employee = row
+    
+    return UserReadWithEmployee(
+        user_id=user.user_id,
+        employee_id=user.employee_id,
+        permissions=user.permissions,
+        status=user.status,
+        employee=EmployeeRead.model_validate(employee)
+    )
 
 async def get_current_admin(
     token: str = Depends(oauth2_scheme),
@@ -109,6 +124,7 @@ async def get_current_admin(
     :return: 管理员用户对象
     """
     user = await get_current_user(token, session)  # 获取当前用户
+
     if user.permissions != 1:  # 权限判断（1 表示管理员权限）
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

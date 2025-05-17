@@ -28,8 +28,7 @@ class UserResponse(UserBase):
     status: int
 
 class UserReadWithEmployee(UserResponse):
-    employee: Optional[EmployeeRead] = None
-
+    employee: EmployeeRead
 class User(UserBase, table=True):
     user_id: Optional[int] = Field(
         default=None,
