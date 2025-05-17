@@ -1,19 +1,27 @@
 'use client';
 
 import { SignInPage } from '@toolpad/core/SignInPage';
-import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
 import { signInAction } from '../actions';
+import { useRouter } from 'next/navigation';
 
 export default function SignIn() {
+    const router = useRouter();
     useEffect(() => {
         const jwt = localStorage.getItem('jwt');
         const employee_id = localStorage.getItem('employee_id');
 
         if (jwt && employee_id) {
-            redirect('/');
+            router.replace('/'); 
         }
-    }, []);
+    }, [router]);
+
+    async function onSignIn(provider, formData, callbackUrl) {
+        const success = await signInAction(formData);
+        if (success) {
+            router.push(callbackUrl ?? '/');
+        }
+    }
 
     return (
         <SignInPage
@@ -46,7 +54,7 @@ export default function SignIn() {
                     type: 'text',
                 },
             }}
-            signIn={signInAction}
+            signIn={onSignIn}
         />
     );
 }

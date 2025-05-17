@@ -64,7 +64,7 @@ export default function UserManagement() {
         { field: 'employee_id', headerName: '工号', flex: 1 },
         { field: 'name', headerName: '姓名', flex: 2, valueGetter: (value, row) => row.employee?.name || '--' },
         { field: 'department', headerName: '部门', flex: 2, valueGetter: (value, row) => row.employee?.department || '--' },
-        { field: 'status', headerName: '状态', flex: 1, valueGetter: (value, row) => row.status === 1 ? '在职' : '离职' },
+        { field: 'status', headerName: '状态', flex: 1, valueGetter: (value, row) => row.status === 1 ? '禁用' : '激活' },
         {
             field: 'action', type: 'actions', headerName: '操作', flex: 1,
             getActions: (params) => [

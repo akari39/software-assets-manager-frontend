@@ -3,7 +3,6 @@ import axios from 'axios';
 import { redirect } from 'next/navigation';
 
 export let globalErrorHandler = null;
-
 export function setGlobalErrorHandler(handler) {
   globalErrorHandler = handler;
 }
@@ -25,27 +24,36 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('jwt');
-      localStorage.removeItem('employee_id');
-      redirect('/auth/signin');
-    }
+  error => {
     return Promise.reject(error);
   }
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log('Axios response', response);
-    return response;
-  },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      console.error('Unauthorized! Redirecting to login...');
-      if (globalErrorHandler) globalErrorHandler("授权失败，请重新登录");
-    } else {
-      if (globalErrorHandler) globalErrorHandler(error.response?.data?.detail || error?.message || "发生了一个错误");
+  response => response,
+  error => {
+    const status = error.response?.status;
+    if (status === 401) {
+      // Clear tokens
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('jwt');
+        localStorage.removeItem('employee_id');
+      }
+      if (globalErrorHandler) {
+        globalErrorHandler('授权失败，请重新登录');
+      }
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/signin';
+      }
+      return Promise.resolve({ data: null, status: 401 });
+    }
+
+    if (globalErrorHandler) {
+      globalErrorHandler(
+        error.response?.data?.detail ||
+        error.message ||
+        '发生了一个错误'
+      );
     }
     return Promise.reject(error);
   }
