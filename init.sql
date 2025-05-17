@@ -18,7 +18,17 @@ CREATE TABLE IF NOT EXISTS software_info (
     CreateTime TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Step 3: 创建 software_license 表
+-- Step 3: 创建 users 表
+CREATE TABLE IF NOT EXISTS users (
+    user_id SERIAL PRIMARY KEY,
+    employee_id VARCHAR(50) UNIQUE NOT NULL REFERENCES employees(employee_id),
+    hashed_password TEXT NOT NULL,
+    permissions INT DEFAULT 0, -- 0 用户, 1 管理员
+    status INT DEFAULT 0, -- 0 正常, 1 禁用
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Step 4: 创建 software_license 表
 CREATE TABLE IF NOT EXISTS software_license (
     LicenseID SERIAL PRIMARY KEY,
     SoftwareInfoID INT NOT NULL REFERENCES software_info(SoftwareInfoID),
@@ -32,7 +42,7 @@ CREATE TABLE IF NOT EXISTS software_license (
     LastUpdateTime TIMESTAMP WITH TIME ZONE
 );
 
--- Step 4: 创建 licenses_usage_record 表
+-- Step 5: 创建 licenses_usage_record 表
 CREATE TABLE IF NOT EXISTS licenses_usage_record (
     RecordID SERIAL PRIMARY KEY,
     LicenseID INT NOT NULL REFERENCES software_license(LicenseID),
@@ -42,16 +52,6 @@ CREATE TABLE IF NOT EXISTS licenses_usage_record (
     Duration_Days INT NOT NULL,
     Return_Time TIMESTAMP WITH TIME ZONE,
     Actually_Return_Time TIMESTAMP WITH TIME ZONE
-);
-
--- Step 5: 创建 users 表
-CREATE TABLE IF NOT EXISTS users (
-    user_id SERIAL PRIMARY KEY,
-    employee_id VARCHAR(50) UNIQUE NOT NULL REFERENCES employees(employee_id),
-    hashed_password TEXT NOT NULL,
-    permissions INT DEFAULT 0, -- 0 用户, 1 管理员
-    status INT DEFAULT 0, -- 0 正常, 1 禁用
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Step 6: 创建 employees 表数据 (test1 - test5)
