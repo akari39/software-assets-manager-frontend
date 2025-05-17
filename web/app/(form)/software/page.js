@@ -83,6 +83,7 @@ export default function Software() {
 
     const closeDetail = () => {
         window.history.pushState(null, '', '/software');
+        fetchData();
     };
 
     const columns = useMemo(() => [

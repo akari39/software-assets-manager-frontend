@@ -6,7 +6,6 @@ import SoftwareLicense from "@/app/model/SoftwareLicense";
 import ConfirmAlertDialog from "@/app/components/ConfirmAlertDialog";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import StyledMenu from '@/app/components/StyledMenu';
-import EditIcon from '@mui/icons-material/Edit';
 
 export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }) {
     const [softwareDetail, setSoftwareDetail] = useState(null);
@@ -14,6 +13,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
     const [confirmReturnOpen, setConfirmReturnOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [confirmApplyOpen, setConfirmApplyOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const menuOpen = Boolean(anchorEl);
 
@@ -25,57 +25,58 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
     }, [open, licenseId]);
 
     async function fetchData() {
+        setLoading(true);
         try {
             const { data } = await axiosInstance.get(
                 `/licenses_with_info/${licenseId}`
             );
             setSoftwareDetail(new SoftwareLicense(data));
         } catch (error) {
-            console.error("Fetch detail failed", error);
+            console.error("Error fetching software license detail:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
     async function handleApply() {
+        setLoading(true);
         try {
             await axiosInstance.post(
                 `/licenses_usage_records/apply`,
                 { LicenseID: licenseId, Duration_Days: 60 }
             );
-            onClose();
+            fetchData();
         } catch (error) {
-            console.error(error);
-        } finally {
-            setConfirmApplyOpen(false);
+            console.error("Error applying for software license:", error);
+            setLoading(false);
         }
     }
 
     async function handleRenew() {
+        setLoading(true);
         try {
-            await axiosInstance.post(
+            const result = await axiosInstance.post(
                 `/licenses_usage_records/renew`,
                 { RecordID: licenseId, Renew_Days: 60 }
             );
             fetchData();
         } catch (error) {
-            console.error(error);
-        } finally {
-            setConfirmRenewOpen(false);
-            handleMenuClose();
+            console.error("Error renewing software license:", error);
+            setLoading(false);
         }
     }
 
     async function handleReturn() {
+        setLoading(true);
         try {
-            await axiosInstance.post(
+            const result = await axiosInstance.post(
                 `/licenses_usage_records/return`,
                 { LicenseID: licenseId }
             );
-            onClose();
+            fetchData();
         } catch (error) {
-            console.error(error);
-        } finally {
-            setConfirmReturnOpen(false);
-            handleMenuClose();
+            console.error("Error returning software license:", error);
+            setLoading(false);
         }
     }
 
@@ -92,8 +93,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                 <IconButton
                     aria-label="close"
                     onClick={onClose}
-                    sx={(theme) => ({ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] })}
-                >
+                    sx={(theme) => ({ position: 'absolute', right: 8, top: 8, color: theme.palette.grey[500] })}>
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
@@ -113,27 +113,32 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                                 <b>软件ID：</b>{softwareDetail.softwareInfoID}
                             </Typography>
 
-                            {/* 如果未领用，则显示领用按钮 */}
+
                             {softwareDetail.licenseStatus === 0 ? (
                                 <Button
+                                    startIcon={loading ? <CircularProgress size={"16px"} /> : null}
+                                    disabled={loading}
                                     variant="contained"
-                                    onClick={() => setConfirmApplyOpen(true)}
-                                >
+                                    onClick={loading ? null : () => setConfirmApplyOpen(true)}>
                                     领用
                                 </Button>
                             ) : (
                                 <>
                                     {/* 已领用时显示续租/退还菜单 */}
-                                    <Stack direction="row" alignItems="center">
-                                        <Button endIcon={<KeyboardArrowDownIcon />} onClick={handleMenuOpen}>
+                                    <Stack direction="row" alignItems="start">
+                                        <Button
+                                            startIcon={loading ? <CircularProgress size={"16px"} /> : null}
+                                            disabled={loading}
+                                            endIcon={<KeyboardArrowDownIcon />}
+                                            onClick={loading ? null : handleMenuOpen} fullWidth>
                                             操作
                                         </Button>
                                         <StyledMenu anchorEl={anchorEl} open={menuOpen} onClose={handleMenuClose}>
                                             <MenuItem onClick={() => setConfirmRenewOpen(true)}>
-                                                <EditIcon fontSize="small" sx={{ mr: 1 }} />续租
+                                                续租
                                             </MenuItem>
-                                            <MenuItem onClick={() => setConfirmReturnOpen(true)}>
-                                                <EditIcon fontSize="small" sx={{ mr: 1 }} />退还
+                                            <MenuItem onClick={() => setConfirmReturnOpen(true)} sx={{ color: 'red' }}>
+                                                退还
                                             </MenuItem>
                                         </StyledMenu>
                                     </Stack>
@@ -166,7 +171,6 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                             />
                         </Stack>
 
-                        <Typography variant="h6">授权信息</Typography>
                         <Typography><b>授权ID: </b>{softwareDetail.licenseID}</Typography>
                         <Typography><b>到期时间: </b>{softwareDetail.formattedLicenseExpiredDate}</Typography>
                         <Typography><b>状态: </b>{softwareDetail.displayLicenseStatus}</Typography>
