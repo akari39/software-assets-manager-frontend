@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import axiosInstance from "@/app/service/axiosConfig";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
 import ConfirmAlertDialog from "@/app/components/ConfirmAlertDialog";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }) {
     const [softwareDetail, setSoftwareDetail] = useState(null);
     const [confirmAlertDialogOpen, setConfirmAlertDialogOpen] = useState(false);
+    const [optionButtonOpen, setOptionButtonOpen] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -32,6 +34,10 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
             Duration_Days: 60,
         });
         fetchData();
+    }
+
+    async function returnSoftwareLicense() {
+        setOptionButtonOpen(false);
     }
 
     return <Dialog
@@ -77,18 +83,30 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                                 disableElevation
                                 fullWidth
                                 onClick={softwareDetail.licenseStatus === 1 ? () => setConfirmAlertDialogOpen(true) : receive}
-                                sx={{ marginRight: "8px" }}>
+                                sx={{ marginRight: "8px" }}
+                                endIcon={<KeyboardArrowDownIcon />}>
                                 {
                                     softwareDetail.licenseStatus === 1 ? "续租" : "领用"
                                 }
                             </Button>
+                            <StyledMenu
+                                MenuListProps={{
+                                    'aria-labelledby': 'demo-customized-button',
+                                }}
+                                open={optionButtonOpen}
+                                onClose={() => setOptionButtonOpen(false)}>
+                                <MenuItem onClick={returnSoftwareLicense}>
+                                    <EditIcon />
+                                    退还
+                                </MenuItem>
+                            </StyledMenu>
                         </Stack>
                         <ConfirmAlertDialog
-                                title="要续租吗？"
-                                content="续租将延长60天资产使用权。"
-                                open={confirmAlertDialogOpen}
-                                setOpen={setConfirmAlertDialogOpen}
-                                onConfirm={renewLicense} />
+                            title="要续租吗？"
+                            content="续租将延长60天资产使用权。"
+                            open={confirmAlertDialogOpen}
+                            setOpen={setConfirmAlertDialogOpen}
+                            onConfirm={renewLicense} />
                     </Stack>
                     <Typography variant="h6">授权信息</Typography>
                     <Typography variant="body1"><b>授权ID: </b>{softwareDetail.licenseID}</Typography>

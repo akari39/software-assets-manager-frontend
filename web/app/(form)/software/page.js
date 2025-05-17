@@ -54,7 +54,7 @@ export default function Software() {
             }
         }
         if (searchFilter && searchKeywords && searchKeywords.length > 0) {
-            api = '/licenses_with_info/search';
+            api = `${api}/search`;
             params = {
                 ...params,
                 search_category: searchFilter,
