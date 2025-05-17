@@ -79,18 +79,29 @@ export default function UserManagement() {
     ], []);
 
     return (
-        <Stack direction="column">
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Button variant="contained" onClick={() => setCreateOpen(true)}>新建用户</Button>
+        <Stack direction="column" spacing={2} sx={{ p: 2 }}>
+            {/* 将新建按钮和搜索栏放在同一行 */}
+            <Stack direction="row" spacing={2} alignItems="center">
+                <FilterSearchBar
+                    options={USER_SEARCH_OPTIONS}
+                    default={DEFAULT_SEARCH_OPTION}
+                    onFilterChange={(e) => setSearchFilter(e.value)}
+                    onSearchChange={(e) => setSearchKeywords(e.target.value)}
+                    onSearch={fetchData}
+                    placeholder="搜索用户"
+                />
+                <Box>
+                    <Button
+                        variant="contained"
+                        disableElevation
+                        sx={{
+                            marginTop: "8px",
+                        }}
+                        onClick={() => setCreateOpen(true)}>
+                        新建用户
+                    </Button>
+                </Box>
             </Stack>
-            <FilterSearchBar
-                options={USER_SEARCH_OPTIONS}
-                default={DEFAULT_SEARCH_OPTION}
-                onFilterChange={(e) => setSearchFilter(e.value)}
-                onSearchChange={(e) => setSearchKeywords(e.target.value)}
-                onSearch={fetchData}
-                placeholder="搜索用户"
-            />
 
             {userData === null ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
