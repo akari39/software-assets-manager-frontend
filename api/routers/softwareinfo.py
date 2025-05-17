@@ -89,7 +89,7 @@ async def update_softwareinfo(
     return db_softwareinfo  # 返回更新后的数据
 
 # 删除一个SoftwareInfo记录，需要管理员权限
-@router.delete("/{softwareinfo_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=Depends(get_current_admin))
+@router.delete("/{softwareinfo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_softwareinfo(
     softwareinfo_id: int,
     session: AsyncSession = Depends(get_session)

@@ -107,7 +107,7 @@ async def update_license(
         raise HTTPException(status_code=500, detail=f"数据库事务处理失败，错误: {e}")
 
 # 删除指定ID的软件许可证
-@router.delete("/{license_id}", status_code=status.HTTP_204_NO_CONTENT,dependencies= Depends(get_current_admin))
+@router.delete("/{license_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_license(
     license_id: int,
     session: AsyncSession = Depends(get_session)
