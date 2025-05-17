@@ -3,7 +3,6 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
-from utils.jwt import get_current_admin
 from dependencies import get_session
 from models.employee import Employee
 from schemas.employee import EmployeeCreate, EmployeeRead, EmployeeUpdate

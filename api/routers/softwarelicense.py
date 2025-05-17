@@ -9,7 +9,6 @@ from datetime import date, datetime, timezone
 from dependencies import get_session
 from models.softwarelicense import SoftwareLicense
 from schemas.softwarelicense import SoftwareLicenseCreate, SoftwareLicenseRead, SoftwareLicenseUpdate
-from utils.jwt import get_current_user, get_current_admin
 
 # 创建一个API路由实例，前缀为/softwarelicense，用于处理软件许可证相关请求
 router = APIRouter(
