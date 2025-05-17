@@ -22,7 +22,7 @@ DEFAULT_ADMIN = {
 }
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:huiji.233@localhost:5433/dev"
+    "postgresql+asyncpg://postgres:huiji.233@localhost:5432/dev"
 )
 print(DATABASE_URL)
 engine = create_async_engine(DATABASE_URL, echo=True)
