@@ -1,4 +1,60 @@
--- Step 1: 创建 employees 表数据 (test1 - test5)
+-- Step 1: 创建 employees 表
+CREATE TABLE IF NOT EXISTS employees (
+    employee_id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    department VARCHAR(100),
+    level INT,
+    status INT DEFAULT 0, -- 0 在职, 1 离职
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Step 2: 创建 software_info 表
+CREATE TABLE IF NOT EXISTS software_info (
+    SoftwareInfoID SERIAL PRIMARY KEY,
+    SoftwareInfoName VARCHAR(255) NOT NULL,
+    SoftwareInfoType INT, -- 可选分类
+    Description TEXT,
+    Vendor VARCHAR(255),
+    CreateTime TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Step 3: 创建 software_license 表
+CREATE TABLE IF NOT EXISTS software_license (
+    LicenseID SERIAL PRIMARY KEY,
+    SoftwareInfoID INT NOT NULL REFERENCES software_info(SoftwareInfoID),
+    LicenseType INT NOT NULL, -- 0=月度订阅, 1=年度订阅, 2=永久
+    LicenseStatus INT DEFAULT 0, -- 0=可用, 1=占用, 2=已过期
+    LicenseKey TEXT,
+    LicenseExpiredDate TIMESTAMP WITH TIME ZONE,
+    LvLimit INT,
+    Remark TEXT,
+    CreateTime TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    LastUpdateTime TIMESTAMP WITH TIME ZONE
+);
+
+-- Step 4: 创建 licenses_usage_record 表
+CREATE TABLE IF NOT EXISTS licenses_usage_record (
+    RecordID SERIAL PRIMARY KEY,
+    LicenseID INT NOT NULL REFERENCES software_license(LicenseID),
+    UserID INT NOT NULL REFERENCES users(user_id),
+    is_expired BOOLEAN DEFAULT FALSE,
+    Checkout_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    Duration_Days INT NOT NULL,
+    Return_Time TIMESTAMP WITH TIME ZONE,
+    Actually_Return_Time TIMESTAMP WITH TIME ZONE
+);
+
+-- Step 5: 创建 users 表
+CREATE TABLE IF NOT EXISTS users (
+    user_id SERIAL PRIMARY KEY,
+    employee_id VARCHAR(50) UNIQUE NOT NULL REFERENCES employees(employee_id),
+    hashed_password TEXT NOT NULL,
+    permissions INT DEFAULT 0, -- 0 用户, 1 管理员
+    status INT DEFAULT 0, -- 0 正常, 1 禁用
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Step 6: 创建 employees 表数据 (test1 - test5)
 INSERT INTO employees (employee_id, name, department, level, status)
 VALUES
     ('test1', 'Test User 1', 'Development', 1, 0),
@@ -8,7 +64,7 @@ VALUES
     ('test5', 'Test User 5', 'Development', 5, 0)
 ON CONFLICT (employee_id) DO NOTHING;
 
--- Step 2: 创建 users 表数据 (test1 - test5)
+-- Step 7: 创建 users 表数据 (test1 - test5)
 -- 使用明文密码 test1-test5
 INSERT INTO users (employee_id, hashed_password, permissions, status)
 SELECT 
@@ -20,7 +76,7 @@ FROM employees
 WHERE employee_id IN ('test1', 'test2', 'test3', 'test4', 'test5')
 ON CONFLICT (employee_id) DO NOTHING;
 
---Step 3: 创建 software_info 表数据
+--Step 8: 创建 software_info 表数据
 INSERT INTO software_info (SoftwareInfoName, SoftwareInfoType, SoftwareInfoMatchRule) VALUES
 ('Microsoft Office', 1, 'Office suite for productivity'),
 ('Adobe Photoshop', 3, 'Professional image editing software'),
@@ -71,7 +127,7 @@ INSERT INTO software_info (SoftwareInfoName, SoftwareInfoType, SoftwareInfoMatch
 ('Wireshark', 2, 'Network protocol analyzer'),
 ('VSFTPD', 5, 'Very Secure FTP Daemon');
 
--- Step 4: 插入 software_license 数据
+-- Step 9: 插入 software_license 数据
 DO $$
 DECLARE
     i INT;
@@ -97,7 +153,7 @@ BEGIN
     END LOOP;
 END $$;
 
--- Step 5: 插入 licenses_usage_record 数据
+-- Step 10: 插入 licenses_usage_record 数据
 DO $$
 DECLARE
     user_id INT;
