@@ -4,12 +4,10 @@ services:
   db:
     image: postgres:17
     restart: always
-    env_file:
-      - test.env
     environment:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=huiji.233
+      - POSTGRES_DB=dev
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -22,9 +20,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     depends_on:
-      - db
-    env_file:
-      - test.env      
+      - db   
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     ports:
@@ -41,10 +37,8 @@ services:
     restart: always
     depends_on:
       - api
-    env_file:
-      - test.env
     environment:
-      - NEXT_PUBLIC_API_URL_DEV
+      - NEXT_PUBLIC_API_URL_DEV=http://localhost:12000
     ports:
       - "3000:3000"
     networks:
