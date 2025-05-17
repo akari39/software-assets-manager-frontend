@@ -1,58 +1,90 @@
--- Step 1: 创建 employees 表
+-- Step 1: 创建employees表
 CREATE TABLE IF NOT EXISTS employees (
-    employee_id VARCHAR(50) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    department VARCHAR(100),
-    level INT,
-    status INT DEFAULT 0, -- 0 在职, 1 离职
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    employee_id VARCHAR NOT NULL,
+    name VARCHAR NOT NULL,
+    gender INTEGER DEFAULT 0,
+    department VARCHAR,
+    level INTEGER DEFAULT 1,
+    status INTEGER DEFAULT 0,
+    PRIMARY KEY (employee_id)
 );
+CREATE INDEX IF NOT EXISTS idx_employees_employee_id ON employees (employee_id);
+CREATE INDEX IF NOT EXISTS idx_employees_name ON employees (name);
+CREATE INDEX IF NOT EXISTS idx_employees_gender ON employees (gender);
+CREATE INDEX IF NOT EXISTS idx_employees_department ON employees (department);
+CREATE INDEX IF NOT EXISTS idx_employees_level ON employees (level);
+CREATE INDEX IF NOT EXISTS idx_employees_status ON employees (status);
 
--- Step 2: 创建 software_info 表
-CREATE TABLE IF NOT EXISTS software_info (
-    SoftwareInfoID SERIAL PRIMARY KEY,
-    SoftwareInfoName VARCHAR(255) NOT NULL,
-    SoftwareInfoType INT, -- 可选分类
-    Description TEXT,
-    Vendor VARCHAR(255),
-    CreateTime TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Step 3: 创建 users 表
+-- Step 2: 创建users表
 CREATE TABLE IF NOT EXISTS users (
-    user_id SERIAL PRIMARY KEY,
-    employee_id VARCHAR(50) UNIQUE NOT NULL REFERENCES employees(employee_id),
-    hashed_password TEXT NOT NULL,
-    permissions INT DEFAULT 0, -- 0 用户, 1 管理员
-    status INT DEFAULT 0, -- 0 正常, 1 禁用
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    user_id SERIAL,
+    employee_id VARCHAR NOT NULL,
+    permissions INTEGER DEFAULT 0,
+    status INTEGER DEFAULT 0,
+    hashed_password VARCHAR NOT NULL,
+    PRIMARY KEY (user_id),
+    CONSTRAINT uq_users_employee_id UNIQUE (employee_id),
+    CONSTRAINT fk_users_employee_id
+        FOREIGN KEY(employee_id)
+        REFERENCES employees(employee_id)
+        ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_users_user_id ON users (user_id);
+CREATE INDEX IF NOT EXISTS idx_users_employee_id ON users (employee_id);
+CREATE INDEX IF NOT EXISTS idx_users_status ON users (status);
+
+-- Step 3: 创建software_info 表
+CREATE TABLE IF NOT EXISTS software_info (
+    "SoftwareInfoID" SERIAL,
+    "SoftwareInfoName" VARCHAR NOT NULL,
+    "SoftwareInfoType" INTEGER DEFAULT 0,
+    "SoftwareInfoMatchRule" VARCHAR,
+    PRIMARY KEY ("SoftwareInfoID")
 );
 
--- Step 4: 创建 software_license 表
+-- Step 4: 创建software_license 表
 CREATE TABLE IF NOT EXISTS software_license (
-    LicenseID SERIAL PRIMARY KEY,
-    SoftwareInfoID INT NOT NULL REFERENCES software_info(SoftwareInfoID),
-    LicenseType INT NOT NULL, -- 0=月度订阅, 1=年度订阅, 2=永久
-    LicenseStatus INT DEFAULT 0, -- 0=可用, 1=占用, 2=已过期
-    LicenseKey TEXT,
-    LicenseExpiredDate TIMESTAMP WITH TIME ZONE,
-    LvLimit INT,
-    Remark TEXT,
-    CreateTime TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    LastUpdateTime TIMESTAMP WITH TIME ZONE
+    "LicenseID" SERIAL,
+    "SoftwareInfoID" INTEGER NOT NULL,
+    "LicenseType" INTEGER NOT NULL,
+    "LicenseStatus" INTEGER DEFAULT 0,
+    "LicenseKey" VARCHAR(500),
+    "LicenseExpiredDate" TIMESTAMP WITH TIME ZONE,
+    "LvLimit" INTEGER DEFAULT 0,
+    "Remark" VARCHAR,
+    "CreateTime" TIMESTAMP WITH TIME ZONE,
+    "LastUpdateTime" TIMESTAMP WITH TIME ZONE,
+    PRIMARY KEY ("LicenseID"),
+    CONSTRAINT fk_software_license_software_info_id
+        FOREIGN KEY("SoftwareInfoID")
+        REFERENCES software_info("SoftwareInfoID")
+        ON DELETE RESTRICT
 );
+CREATE INDEX IF NOT EXISTS idx_software_license_software_info_id ON software_license ("SoftwareInfoID");
 
--- Step 5: 创建 licenses_usage_record 表
+-- Step 5: 创建licenses_usage_record表
 CREATE TABLE IF NOT EXISTS licenses_usage_record (
-    RecordID SERIAL PRIMARY KEY,
-    LicenseID INT NOT NULL REFERENCES software_license(LicenseID),
-    UserID INT NOT NULL REFERENCES users(user_id),
+    "RecordID" SERIAL,
+    "LicenseID" INTEGER NOT NULL,
     is_expired BOOLEAN DEFAULT FALSE,
-    Checkout_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    Duration_Days INT NOT NULL,
-    Return_Time TIMESTAMP WITH TIME ZONE,
-    Actually_Return_Time TIMESTAMP WITH TIME ZONE
+    "UserID" INTEGER NOT NULL,
+    "Checkout_time" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "Duration_Days" INTEGER DEFAULT 0,
+    "Return_Time" TIMESTAMP WITH TIME ZONE,
+    "Actually_Return_Time" TIMESTAMP WITH TIME ZONE,
+    PRIMARY KEY ("RecordID"),
+    CONSTRAINT fk_licenses_usage_record_license_id
+        FOREIGN KEY("LicenseID")
+        REFERENCES software_license("LicenseID")
+        ON DELETE CASCADE,
+    CONSTRAINT fk_licenses_usage_record_user_id
+        FOREIGN KEY("UserID")
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
 );
+CREATE INDEX IF NOT EXISTS idx_licenses_usage_record_license_id ON licenses_usage_record ("LicenseID");
+CREATE INDEX IF NOT EXISTS idx_licenses_usage_record_user_id ON licenses_usage_record ("UserID");
+
 
 -- Step 6: 创建 employees 表数据 (test1 - test5)
 INSERT INTO employees (employee_id, name, department, level, status)
