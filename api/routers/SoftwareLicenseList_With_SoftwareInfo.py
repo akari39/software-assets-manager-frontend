@@ -13,6 +13,7 @@ from models.softwareinfo import SoftwareInfo  # 软件信息模型
 from schemas.softwarelicense import SoftwareLicenseRead  # 软件授权读取模式
 from schemas.softwareinfo import SoftwareInfoRead  # 软件信息读取模式
 from schemas.SoftwareLicenseList_With_SoftwareInfo import SoftwareLicenseReadWithInfo  # 包含软件信息的授权读取模式
+from collections import defaultdict
 
 # 创建API路由实例，前缀为/licenses_with_info，标签为"Licenses With Info"
 router = APIRouter(
@@ -31,11 +32,12 @@ async def get_licenses_list_manual_join(
     session: AsyncSession = Depends(get_session),
     user: UserReadWithEmployee = Depends(get_current_user)
 ):
-    offset = (page - 1) * limit
+    
     license_statement = select(SoftwareLicense)
 
     if license_type is not None:
         license_statement = license_statement.where(SoftwareLicense.LicenseType == license_type)
+
     if status_filter is not None:
         if user.permissions == 0:
             status_filter_statement = 0
@@ -47,6 +49,7 @@ async def get_licenses_list_manual_join(
     license_statement = license_statement.where(
         SoftwareLicense.LvLimit <= user.employee.level
     )
+    offset = (page - 1) * limit
     license_statement = license_statement.offset(offset).limit(limit)
     result_licenses = await session.execute(license_statement)
     licenses_db: List[SoftwareLicense] = result_licenses.scalars().all()
@@ -77,21 +80,16 @@ async def get_licenses_list_manual_join(
             )
             .order_by(LicensesUsageRecord.Checkout_time.desc())
         )
-
         result_records = await session.execute(record_statement)
         records_db = result_records.scalars().all()
-
         # 构建映射：license_id -> 最新 record
-        from collections import defaultdict
         grouped_records = defaultdict(list)
         for r in records_db:
-            grouped_records(r.LicenseID).append(r)
-
+            grouped_records[r.LicenseID].append(r)
         # 取每个 license 的第一条（最新）
         for lid in license_ids:
             if grouped_records[lid]:
                 usage_records_map[lid] = LicensesUsageRecordRead.model_validate(grouped_records[lid][0])
-
     # 组合数据
     combined_results = []
     for license_db in licenses_db:
