@@ -47,7 +47,6 @@ axiosInstance.interceptors.response.use(
     } else {
       if (globalErrorHandler) globalErrorHandler(error.response?.data?.detail || error?.message || "发生了一个错误");
     }
-    return Promise.reject(error);
   }
 );
 
