@@ -22,7 +22,6 @@ async def create_employee(
     Session: AsyncSession = Depends(get_session)
 ):
     now = datetime.datetime.now()
-    print(current_user)
     used_query = (
         select(LicensesUsageRecord)
         .where(
@@ -32,7 +31,6 @@ async def create_employee(
     )
     used_result = await Session.execute(used_query)
     used_count = len(used_result.scalars().all())
-    print(used_count)
 
     approach_expire_query = (
         select(LicensesUsageRecord)
@@ -44,7 +42,6 @@ async def create_employee(
     )
     approach_expire_result = await Session.execute(approach_expire_query)
     approach_expire_count = len(approach_expire_result.scalars().all())
-    print(approach_expire_count)
 
     available_query = (
         select(SoftwareLicense)
@@ -55,7 +52,6 @@ async def create_employee(
         )
     available_result = await Session.execute(available_query)
     available_count = len(available_result.scalars().all())
-    print(available_count)
 
     return Dashboard(
         used_licenses=used_count,

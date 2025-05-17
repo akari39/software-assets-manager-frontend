@@ -84,7 +84,6 @@ async def get_current_user(
         # 解码 JWT token
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id_str: Optional[str] = payload.get("sub")  # 提取用户 ID 字符串
-        print(user_id_str)
         if user_id_str is None:
             raise credentials_exception  # 用户 ID 不存在则抛出异常
         try:
