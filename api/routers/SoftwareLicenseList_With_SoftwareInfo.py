@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Dict, Tuple
-from models.user import User
+from models.user import User, UserReadWithEmployee
 from utils.jwt import get_current_user
 from schemas.licenses_usage_record import LicensesUsageRecordRead
 from models.licenses_usage_record import LicensesUsageRecord
@@ -30,7 +30,7 @@ async def get_licenses_list_manual_join(
     limit: int = Query(20, ge=1, le=100, description="每页数量"),
     session: AsyncSession = Depends(get_session)
 ):
-    user,employee =  User(Depends(get_current_user))
+    user,employee =  UserReadWithEmployee(Depends(get_current_user))
     offset = (page - 1) * limit
     license_statement = select(SoftwareLicense)
 
@@ -127,7 +127,7 @@ async def search_licenses_with_info(
     query = select(SoftwareLicense, SoftwareInfo).outerjoin(
         SoftwareInfo, SoftwareLicense.SoftwareInfoID == SoftwareInfo.SoftwareInfoID
     )
-    user =  User(Depends(get_current_user))
+    user,employee =  User(Depends(get_current_user))
 
     try:
         # 根据搜索类别添加不同的过滤条件
