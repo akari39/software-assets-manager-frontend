@@ -32,11 +32,6 @@ const NAVIGATION = [
         icon: <AppRegistrationIcon />,
     },
     {
-        segment: 'dataDashboard',
-        title: '数据看板',
-        icon: <SsidChartIcon />,
-    },
-    {
         segment: 'userManagement',
         title: '用户管理',
         icon: <PersonIcon />,
