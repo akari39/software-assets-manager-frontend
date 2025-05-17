@@ -68,6 +68,7 @@ export default function Software() {
             const data = response.data;
             setLicenseData(SoftwareLicense.fromArray(data));
         } catch (error) {
+            console.log(error)
         }
     }
 
@@ -139,7 +140,18 @@ export default function Software() {
                 onSearchChange={(event) => { setSearchKeywords(event.target.value) }}
                 onSearch={fetchData}
                 placeholder="搜索软件" />
-            {licenseData !== null ?
+            {licenseData === null ?
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: 400,
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+                :
                 <DataGrid
                     columns={columns}
                     paginationModel={paginationModel}
@@ -153,17 +165,7 @@ export default function Software() {
                         marginRight: "32px",
                         marginTop: "8px",
                         marginBottom: "8px",
-                    }} /> :
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: 400,
-                    }}
-                >
-                    <CircularProgress />
-                </Box>
+                    }} /> 
             }
             {licenseId &&
                 <SoftwareLicenseDetailDialog
