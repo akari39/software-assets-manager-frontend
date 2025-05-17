@@ -32,12 +32,32 @@ async def create_user(
         UserRead: 创建成功的用户信息。
     """
     # 根据提供的 employee_id 查询员工是否存在
-    employee = await session.get(Employee, user_in.employee_id)
-    if not employee:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Employee with ID '{user_in.employee_id}' not found. Cannot create user."
-        )
+    if user_in.employee is not None:
+        existing_employee_check = await session.get(Employee, user_in.employee.employee_id)
+        if existing_employee_check:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Employee with ID '{user_in.employee.employee_id}' already exists."
+            )
+        db_employee = Employee.model_validate(user_in.employee)
+        session.add(db_employee)
+        try:
+            await session.commit()
+            await session.refresh(db_employee)
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error creating employee: {str(e)}"
+            )
+    
+    else:
+        employee = await session.get(Employee, user_in.employee_id)
+        if not employee:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee with ID '{user_in.employee_id}' not found. Cannot create user."
+            )
 
     # 检查是否已经存在相同 employee_id 的用户
     query = select(User).where(User.employee_id == user_in.employee_id)
