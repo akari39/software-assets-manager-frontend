@@ -44,7 +44,9 @@ async def get_licenses_list_manual_join(
         license_statement = license_statement.where(SoftwareLicense.LicenseStatus == status_filter_statement)
     if software_id is not None:
         license_statement = license_statement.where(SoftwareLicense.SoftwareInfoID == software_id)
-
+    license_statement = license_statement.where(
+        SoftwareLicense.LvLimit <= user.employee.level
+    )
     license_statement = license_statement.offset(offset).limit(limit)
     result_licenses = await session.execute(license_statement)
     licenses_db: List[SoftwareLicense] = result_licenses.scalars().all()
