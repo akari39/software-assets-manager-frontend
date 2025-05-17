@@ -1,6 +1,6 @@
 import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import Session, select
+from sqlmodel import Session, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
@@ -47,7 +47,10 @@ async def create_employee(
         select(SoftwareLicense)
         .where(
             SoftwareLicense.LicenseStatus == 0,
-            (SoftwareLicense.LvLimit <=  current_user.employee.level),
+            or_(
+                SoftwareLicense.LvLimit.is_(None),
+                SoftwareLicense.LvLimit <=  current_user.employee.level
+                ),
         )
         )
     available_result = await Session.execute(available_query)
