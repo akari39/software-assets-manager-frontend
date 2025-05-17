@@ -10,7 +10,7 @@ export async function signInAction(provider, formData, callbackUrl) {
         password: password,
     });
 
-    const token = res.data?.access_token;
+    const token = res?.data?.access_token;
     if (token) {
         localStorage.setItem('jwt', token);
         localStorage.setItem('employee_id', id);
