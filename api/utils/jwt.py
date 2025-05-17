@@ -99,6 +99,7 @@ async def get_current_user(
         query = query.where(User.user_id == user_id)
     result = await session.execute(query)
     row = result.first()
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+row)
     if not row:
         raise credentials_exception  # 用户不存在则抛出异常
     
