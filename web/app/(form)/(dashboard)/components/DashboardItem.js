@@ -5,7 +5,6 @@ export default function DashboardItem({ number, title, href, tintColor }) {
 
     return (
         <Card
-            elevation="0px"
             sx={{
                 borderRadius: "12px",
                 flexGrow: 1, padding: "12px",
