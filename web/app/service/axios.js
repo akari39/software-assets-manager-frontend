@@ -13,6 +13,10 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Log query‐params
+    const method = (config.method || 'get').toUpperCase();
+    console.log('[Axios] ⬆️ Requesting:', config);
+
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('jwt');
       if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -26,7 +30,7 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   response => {
-    console.log('Axios Response:', response);
+    console.log('[Axios] ⬇️ Response:', response);
     return response;
   },
   error => {
