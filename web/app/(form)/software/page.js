@@ -119,7 +119,7 @@ export default function Software() {
                 <FilterSearchBar
                     options={SOFTWARE_SEARCH_OPTIONS}
                     default={SOFTWARE_DEFALUT_SEARCH_OPTIONS}
-                    onFilterChange={e => setSearchFilter(e.value)}
+                    onFilterChange={e => setSearchFilter(e.target.value)}
                     onSearchChange={e => setSearchKeywords(e.target.value)}
                     onSearch={fetchData}
                     placeholder="搜索软件"
