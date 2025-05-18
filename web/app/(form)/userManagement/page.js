@@ -1,7 +1,6 @@
 'use client';
 
 import FilterSearchBar from "@/app/components/FilterSearchBar";
-import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
 import UserDetailDialog from './userDetail/UserDetailDialog';
 import User from "@/app/model/User";
 import axiosInstance from "@/app/service/axiosConfig";
@@ -49,7 +48,7 @@ export default function UserManagement() {
             const response = await axiosInstance.get(api, { params });
             setUserData(User.fromArray(response.data));
         } catch (err) {
-            console.error(err);
+            console.log(err);
         }
     }
 

@@ -56,7 +56,6 @@ export default function SoftwareDetail() {
         },
     ]);
 
-
     return (
         <Stack direction="column" >
             {softwareInfoData !== null &&

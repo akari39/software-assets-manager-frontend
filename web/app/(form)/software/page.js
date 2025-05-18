@@ -66,7 +66,7 @@ export default function Software() {
             const res = await axiosInstance.get(api, { params });
             setLicenseData(SoftwareLicense.fromArray(res.data));
         } catch (err) {
-            console.error(err);
+            console.log(err);
         }
     }
     const openDetail = (id) => {
@@ -144,7 +144,6 @@ export default function Software() {
                     paginationMode="server"
                     paginationModel={paginationModel}
                     onPaginationModelChange={setPaginationModel}
-                    autoHeight
                 />
             )}
 

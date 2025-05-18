@@ -1,11 +1,6 @@
 // services/axiosConfig.js
 import axios from 'axios';
-import { redirect } from 'next/navigation';
-
-export let globalErrorHandler = null;
-export function setGlobalErrorHandler(handler) {
-  globalErrorHandler = handler;
-}
+import { globalSnackbarHandler } from '../components/GlobalSnackbar';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL_DEV,
@@ -39,8 +34,11 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem('jwt');
         localStorage.removeItem('employee_id');
       }
-      if (globalErrorHandler) {
-        globalErrorHandler('授权失败，请重新登录');
+      if (globalSnackbarHandler) {
+        globalSnackbarHandler({
+          tip: '授权失败，请重新登录',
+          type: 'error',
+        });
       }
       if (typeof window !== 'undefined') {
         window.location.href = '/auth/signin';
@@ -48,11 +46,14 @@ axiosInstance.interceptors.response.use(
       return Promise.resolve({ data: null, status: 401 });
     }
 
-    if (globalErrorHandler) {
-      globalErrorHandler(
-        error.response?.data?.detail ||
-        error.message ||
-        '发生了一个错误'
+    if (globalSnackbarHandler) {
+      globalSnackbarHandler(
+        {
+          tip: error.response?.data?.detail ||
+            error.message ||
+            '发生了一个错误',
+          type: 'error',
+        }
       );
     }
     return Promise.reject(error);

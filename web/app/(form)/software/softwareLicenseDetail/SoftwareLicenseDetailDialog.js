@@ -6,6 +6,7 @@ import SoftwareLicense from "@/app/model/SoftwareLicense";
 import ConfirmAlertDialog from "@/app/components/ConfirmAlertDialog";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import StyledMenu from '@/app/components/StyledMenu';
+import { useSnackbar } from "@/app/context/SnackbarProvider";
 
 export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }) {
     const [softwareDetail, setSoftwareDetail] = useState(null);
@@ -20,6 +21,8 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
     const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
     const handleMenuClose = () => setAnchorEl(null);
 
+    const { setSnackbarTip } = useSnackbar();
+
     useEffect(() => {
         if (open && licenseId) fetchData();
     }, [open, licenseId]);
@@ -32,7 +35,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
             );
             setSoftwareDetail(new SoftwareLicense(data));
         } catch (error) {
-            console.error("Error fetching software license detail:", error);
+            console.log("Error fetching software license detail:", error);
         } finally {
             setLoading(false);
         }
@@ -45,9 +48,13 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                 `/licenses_usage_records/apply`,
                 { LicenseID: licenseId, Duration_Days: 60 }
             );
+            setSnackbarTip({
+                tip: '领取成功',
+                type: 'success',
+            });
             fetchData();
         } catch (error) {
-            console.error("Error applying for software license:", error);
+            console.log("Error applying for software license:", error);
             setLoading(false);
         }
     }
@@ -59,9 +66,13 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                 `/licenses_usage_records/renew`,
                 { RecordID: licenseId, Renew_Days: 60 }
             );
+            setSnackbarTip({
+                tip: '续租成功',
+                type: 'success',
+            });
             fetchData();
         } catch (error) {
-            console.error("Error renewing software license:", error);
+            console.log("Error renewing software license:", error);
             setLoading(false);
         }
     }
@@ -73,9 +84,13 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                 `/licenses_usage_records/return`,
                 { LicenseID: licenseId }
             );
+            setSnackbarTip({
+                tip: '退还成功',
+                type: 'success',
+            });
             fetchData();
         } catch (error) {
-            console.error("Error returning software license:", error);
+            console.log("Error returning software license:", error);
             setLoading(false);
         }
     }
@@ -86,8 +101,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
             onClose={onClose}
             slotProps={{
                 paper: { sx: { minWidth: '400px' } },
-            }}
-        >
+            }}>
             <DialogTitle>
                 软件详情
                 <IconButton
@@ -130,6 +144,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                                             startIcon={loading ? <CircularProgress size={"16px"} /> : null}
                                             disabled={loading}
                                             endIcon={<KeyboardArrowDownIcon />}
+                                            variant="outlined"
                                             onClick={loading ? null : handleMenuOpen} fullWidth>
                                             操作
                                         </Button>
