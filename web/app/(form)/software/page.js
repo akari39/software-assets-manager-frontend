@@ -48,6 +48,15 @@ export default function Software() {
         let api = status.value === 1 ? '/licenses_with_info/used_license' : '/licenses_with_info';
         let params = { page: paginationModel.page + 1, limit: paginationModel.pageSize };
         if (searchFilter && searchKeywords) {
+            if (searchFilter === 'software_info_id'){
+                const num = parseInt(searchKeywords);
+                if (!isNaN(num)){
+                    search_value  = num;
+                }else{
+                    alert('请输入数字');
+                    return;
+                }
+            }
             api += '/search';
             params.search_category = searchFilter;
             params.search_value = searchKeywords;
