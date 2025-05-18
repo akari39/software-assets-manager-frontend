@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography, MenuItem } from "@mui/material";
+import { Button, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography, MenuItem, DialogActions } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from "react";
 import axiosInstance from "@/app/service/axiosConfig";
@@ -61,6 +61,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
 
     async function handleRenew() {
         setLoading(true);
+        handleMenuClose();
         try {
             const result = await axiosInstance.post(
                 `/licenses_usage_records/renew`,
@@ -79,6 +80,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
 
     async function handleReturn() {
         setLoading(true);
+        handleMenuClose();
         try {
             const result = await axiosInstance.post(
                 `/licenses_usage_records/return`,
@@ -127,55 +129,6 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                                 <b>软件ID：</b>{softwareDetail.softwareInfoID}
                             </Typography>
 
-
-                            {softwareDetail.licenseStatus === 0 ? (
-                                <Button
-                                    startIcon={loading ? <CircularProgress size={"16px"} /> : null}
-                                    disabled={loading}
-                                    variant="contained"
-                                    onClick={loading ? null : () => setConfirmApplyOpen(true)}>
-                                    领用
-                                </Button>
-                            ) : (
-                                <>
-                                    {/* 已领用时显示续租/退还菜单 */}
-                                    <Stack direction="row" alignItems="start">
-                                        <Button
-                                            startIcon={loading ? <CircularProgress size={"16px"} /> : null}
-                                            disabled={loading}
-                                            endIcon={<KeyboardArrowDownIcon />}
-                                            variant="outlined"
-                                            onClick={loading ? null : handleMenuOpen} fullWidth>
-                                            操作
-                                        </Button>
-                                        <StyledMenu anchorEl={anchorEl} open={menuOpen} onClose={handleMenuClose}>
-                                            <MenuItem onClick={() => setConfirmRenewOpen(true)}>
-                                                续租
-                                            </MenuItem>
-                                            <MenuItem onClick={() => setConfirmReturnOpen(true)} sx={{ color: 'red' }}>
-                                                退还
-                                            </MenuItem>
-                                        </StyledMenu>
-                                    </Stack>
-
-                                    <ConfirmAlertDialog
-                                        title="续租确认"
-                                        content="续租将延长60天资产使用权，确定要续租吗？"
-                                        open={confirmRenewOpen}
-                                        setOpen={setConfirmRenewOpen}
-                                        onConfirm={handleRenew}
-                                    />
-
-                                    <ConfirmAlertDialog
-                                        title="退还确认"
-                                        content="退还后将收回该软件授权，确定要退还吗？"
-                                        open={confirmReturnOpen}
-                                        setOpen={setConfirmReturnOpen}
-                                        onConfirm={handleReturn}
-                                    />
-                                </>
-                            )}
-
                             {/* 应用确认弹窗 */}
                             <ConfirmAlertDialog
                                 title="领用确认"
@@ -192,6 +145,58 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                     </>
                 )}
             </DialogContent>
+            {
+                softwareDetail &&
+                <DialogActions>
+                    {softwareDetail.licenseStatus === 0 ? (
+                        <Button
+                            startIcon={loading ? <CircularProgress size={"16px"} /> : null}
+                            disabled={loading}
+                            variant="contained"
+                            onClick={loading ? null : () => setConfirmApplyOpen(true)}>
+                            领用
+                        </Button>
+                    ) : (
+                        <>
+                            {/* 已领用时显示续租/退还菜单 */}
+                            <Stack direction="row" alignItems="start">
+                                <Button
+                                    startIcon={loading ? <CircularProgress size={"16px"} /> : null}
+                                    disabled={loading}
+                                    endIcon={<KeyboardArrowDownIcon />}
+                                    variant="outlined"
+                                    onClick={loading ? null : handleMenuOpen} fullWidth>
+                                    操作
+                                </Button>
+                                <StyledMenu anchorEl={anchorEl} open={menuOpen} onClose={handleMenuClose}>
+                                    <MenuItem onClick={() => setConfirmRenewOpen(true)}>
+                                        续租
+                                    </MenuItem>
+                                    <MenuItem onClick={() => setConfirmReturnOpen(true)} sx={{ color: 'red' }}>
+                                        退还
+                                    </MenuItem>
+                                </StyledMenu>
+                            </Stack>
+
+                            <ConfirmAlertDialog
+                                title="续租确认"
+                                content="续租将延长60天资产使用权，确定要续租吗？"
+                                open={confirmRenewOpen}
+                                setOpen={setConfirmRenewOpen}
+                                onConfirm={handleRenew}
+                            />
+
+                            <ConfirmAlertDialog
+                                title="退还确认"
+                                content="退还后将收回该软件授权，确定要退还吗？"
+                                open={confirmReturnOpen}
+                                setOpen={setConfirmReturnOpen}
+                                onConfirm={handleReturn}
+                            />
+                        </>
+                    )}
+                </DialogActions>
+            }
         </Dialog>
     );
 }
