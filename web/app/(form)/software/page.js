@@ -47,6 +47,7 @@ export default function Software() {
     async function fetchData() {
         let api = status.value === 1 ? '/licenses_with_info/used_license' : '/licenses_with_info';
         let params = { page: paginationModel.page + 1, limit: paginationModel.pageSize };
+        let search_value = searchKeywords;
         if (searchFilter && searchKeywords) {
             if (searchFilter === 'software_info_id'){
                 const num = parseInt(searchKeywords);
@@ -59,7 +60,7 @@ export default function Software() {
             }
             api += '/search';
             params.search_category = searchFilter;
-            params.search_value = searchKeywords;
+            params.search_value = search_value;
         }
         try {
             const res = await axiosInstance.get(api, { params });
