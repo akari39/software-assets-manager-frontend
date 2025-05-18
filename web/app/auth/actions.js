@@ -1,4 +1,4 @@
-import axiosInstance from '@/app/service/axiosConfig';
+import axiosInstance from '@/app/service/axios';
 import { globalSnackbarHandler } from '../components/GlobalSnackbar';
 
 export async function signInAction(formData) {

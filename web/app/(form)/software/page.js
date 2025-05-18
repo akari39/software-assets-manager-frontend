@@ -3,7 +3,7 @@
 import FilterSearchBar from "@/app/components/FilterSearchBar";
 import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
-import axiosInstance from "@/app/service/axiosConfig";
+import axiosInstance from "@/app/service/axios";
 import { Box, Button, CircularProgress, Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";

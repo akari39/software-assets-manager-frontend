@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from 'react';
-import axiosInstance from '@/app/service/axiosConfig';
+import axiosInstance from '@/app/service/axios';
 import ConfirmAlertDialog from '@/app/components/ConfirmAlertDialog';
 import User from '@/app/model/User';
 

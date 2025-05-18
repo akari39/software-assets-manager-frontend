@@ -19,7 +19,6 @@ export default function GlobalSnackbar() {
     if (snackbarTip) {
       setOpen(true);
     }
-    console.log('snackbarTip', snackbarTip);
   }, [snackbarTip]);
 
   // Close handler for the Snackbar

@@ -4,7 +4,7 @@ import FilterSearchBar from "@/app/components/FilterSearchBar";
 import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
 import SoftwareInfo from "@/app/model/SoftwareInfo";
 import SoftwareType from "@/app/model/SoftwareType";
-import axiosInstance from "@/app/service/axiosConfig";
+import axiosInstance from "@/app/service/axios";
 import { Link, Stack, Box, Paper } from "@mui/material";
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";

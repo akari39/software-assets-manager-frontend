@@ -25,7 +25,10 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
-  response => response,
+  response => {
+    console.log('Axios Response:', response);
+    return response;
+  },
   error => {
     const status = error.response?.status;
     if (status === 401) {

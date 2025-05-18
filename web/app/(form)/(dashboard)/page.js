@@ -2,7 +2,7 @@
 
 import { Stack, CircularProgress, Box } from "@mui/material";
 import { useEffect, useState } from 'react';
-import axiosInstance from '@/app/service/axiosConfig';
+import axiosInstance from '@/app/service/axios';
 import DashboardItem from './components/DashboardItem';
 
 export default function Dashboard() {

@@ -1,7 +1,7 @@
 import { Button, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography, MenuItem, DialogActions } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from "react";
-import axiosInstance from "@/app/service/axiosConfig";
+import axiosInstance from "@/app/service/axios";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
 import ConfirmAlertDialog from "@/app/components/ConfirmAlertDialog";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -63,7 +63,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
         setLoading(true);
         handleMenuClose();
         try {
-            const result = await axiosInstance.post(
+            await axiosInstance.post(
                 `/licenses_usage_records/renew`,
                 { RecordID: licenseId, Renew_Days: 60 }
             );
@@ -122,12 +122,11 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                 ) : (
                     <>
                         <Stack direction="column" spacing={1.5} mb={2}>
-                            <Typography variant="h4">
-                                {softwareDetail.softwareInfo.softwareInfoName}
-                            </Typography>
-                            <Typography>
-                                <b>软件ID：</b>{softwareDetail.softwareInfoID}
-                            </Typography>
+                            <Typography variant="h4">{softwareDetail.softwareInfo.softwareInfoName}</Typography>
+                            <Stack>
+                                <Typography><b>软件ID：</b>{softwareDetail.softwareInfoID}</Typography>
+                                <Typography><b>软件类型：</b>{softwareDetail.softwareInfo?.displaySoftwareInfoType}</Typography>
+                            </Stack>
 
                             {/* 应用确认弹窗 */}
                             <ConfirmAlertDialog
@@ -140,6 +139,7 @@ export default function SoftwareLicenseDetailDialog({ open, onClose, licenseId }
                         </Stack>
 
                         <Typography><b>授权ID: </b>{softwareDetail.licenseID}</Typography>
+                        <Typography><b>授权类型: </b>{softwareDetail.displayLicenseType}</Typography>
                         <Typography><b>到期时间: </b>{softwareDetail.formattedLicenseExpiredDate}</Typography>
                         <Typography><b>状态: </b>{softwareDetail.displayLicenseStatus}</Typography>
                     </>
