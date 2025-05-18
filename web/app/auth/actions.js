@@ -1,4 +1,5 @@
-import axiosInstance, { globalErrorHandler } from '@/app/service/axiosConfig';
+import axiosInstance from '@/app/service/axios';
+import { globalSnackbarHandler } from '../components/GlobalSnackbar';
 
 export async function signInAction(formData) {
     const id = formData.get('email')?.toString();
@@ -13,10 +14,10 @@ export async function signInAction(formData) {
         localStorage.setItem('employee_id', id);
         return true;
     } catch (error) {
-        console.error(error);
-        if (globalErrorHandler) {
-            globalErrorHandler('登录失败，请检查工号和密码');
-        }
+        globalSnackbarHandler({
+            tip: error.response?.data?.detail || '发生了一个错误',
+            type: 'error',
+        });
         return false;
     }
 }

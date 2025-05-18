@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from 'react';
-import axiosInstance from '@/app/service/axiosConfig';
+import axiosInstance from '@/app/service/axios';
 import ConfirmAlertDialog from '@/app/components/ConfirmAlertDialog';
 import User from '@/app/model/User';
 
@@ -80,7 +80,7 @@ export default function UserDetailDialog({ open, onClose, userId }) {
             setLevel(user.employee?.level || 1);
             setEmpStatus(user.employee?.status || 0);
         } catch (err) {
-            console.error('Fetch user failed', err);
+            console.log('Fetch user failed', err);
         } finally {
             setLoading(false);
         }
@@ -109,7 +109,7 @@ export default function UserDetailDialog({ open, onClose, userId }) {
             }
             onClose();
         } catch (err) {
-            console.error('Save user failed', err);
+            console.log('Save user failed', err);
         }
     }
 

@@ -3,7 +3,7 @@
 import FilterSearchBar from "@/app/components/FilterSearchBar";
 import SingleChoiceChipFilter from "@/app/components/SingleChoiceChipFilter";
 import SoftwareLicense from "@/app/model/SoftwareLicense";
-import axiosInstance from "@/app/service/axiosConfig";
+import axiosInstance from "@/app/service/axios";
 import { Box, Button, CircularProgress, Link, Stack } from "@mui/material";
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from "react";
@@ -66,7 +66,7 @@ export default function Software() {
             const res = await axiosInstance.get(api, { params });
             setLicenseData(SoftwareLicense.fromArray(res.data));
         } catch (err) {
-            console.error(err);
+            console.log(err);
         }
     }
     const openDetail = (id) => {
@@ -144,7 +144,6 @@ export default function Software() {
                     paginationMode="server"
                     paginationModel={paginationModel}
                     onPaginationModelChange={setPaginationModel}
-                    autoHeight
                 />
             )}
 

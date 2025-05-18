@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from 'react';
-import axiosInstance from '@/app/service/axiosConfig';
+import axiosInstance from '@/app/service/axios';
 import ConfirmAlertDialog from '@/app/components/ConfirmAlertDialog';
 import SoftwareLicense from '@/app/model/SoftwareLicense';
 
@@ -74,7 +74,7 @@ export default function SoftwareLicenseDialog({ open, onClose, licenseId }) {
             setLvLimit(lic.lvLimit);
             setRemark(lic.remark ?? '');
         } catch (err) {
-            console.error('Fetch license failed', err);
+            console.log('Fetch license failed', err);
         } finally {
             setLoading(false);
         }
@@ -98,7 +98,7 @@ export default function SoftwareLicenseDialog({ open, onClose, licenseId }) {
             }
             onClose();
         } catch (err) {
-            console.error('Save license failed', err);
+            console.log('Save license failed', err);
         }
     }
 

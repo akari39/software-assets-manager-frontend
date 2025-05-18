@@ -2,25 +2,25 @@
 
 import { Stack, CircularProgress, Box } from "@mui/material";
 import { useEffect, useState } from 'react';
-import axiosInstance from '@/app/service/axiosConfig';
+import axiosInstance from '@/app/service/axios';
 import DashboardItem from './components/DashboardItem';
 
 export default function Dashboard() {
-  const [stats, setStats] = useState(null);
+  const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchStats() {
+    async function fetchStatus() {
       try {
         const response = await axiosInstance.get('/dashboard');
-        setStats(response.data);
+        setStatus(response.data);
       } catch (err) {
-        console.error('Fetch dashboard stats failed', err);
+        console.log('Fetch dashboard stats failed', err);
       } finally {
         setLoading(false);
       }
     }
-    fetchStats();
+    fetchStatus();
   }, []);
 
   if (loading) {
@@ -39,19 +39,19 @@ export default function Dashboard() {
         padding="32px"
       >
         <DashboardItem
-          number={stats.used_licenses}
+          number={status?.used_licenses}
           title="正在使用"
           href="/dashboard/software"
           tintColor="green"
         />
         <DashboardItem
-          number={stats.approching_expired_licenses}
+          number={status?.approching_expired_licenses}
           title="即将过期"
           href="/dashboard/software"
           tintColor="red"
         />
         <DashboardItem
-          number={stats.apllicable_licenses}
+          number={status?.apllicable_licenses}
           title="可领用"
           href="/dashboard/software"
           tintColor="blue"

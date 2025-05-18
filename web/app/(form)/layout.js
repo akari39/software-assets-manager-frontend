@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react"
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import SsidChartIcon from '@mui/icons-material/SsidChart';
 import PersonIcon from '@mui/icons-material/Person';
-import axiosInstance from '../service/axiosConfig';
+import axiosInstance from '../service/axios';
 import { useRouter } from 'next/navigation';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AppsIcon from '@mui/icons-material/Apps';
@@ -55,7 +55,7 @@ export default function FormLayout({ children }) {
     useEffect(() => {
         (async () => {
             const employeeId = localStorage.getItem('employee_id');
-            console.log('employeeId', employeeId);
+            console.log('Employee Id: ', employeeId);
             if (employeeId === null || employeeId === undefined) {
                 setSession(null);
                 return;

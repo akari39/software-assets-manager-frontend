@@ -1,7 +1,7 @@
 'use client';
 
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
-import { ErrorProvider } from './context/ErrorProvider';
+import { SnackbarProvider } from './context/SnackbarProvider';
 import GlobalSnackbar from './components/GlobalSnackbar';
 import { Suspense } from 'react';
 import { LinearProgress } from '@mui/material';
@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="zh-cn">
       <body>
-        <ErrorProvider>
+        <SnackbarProvider>
           <GlobalSnackbar />
           <AppRouterCacheProvider>
             <Suspense fallback={<LinearProgress />}>
@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
               </NextAppProvider>
             </Suspense>
           </AppRouterCacheProvider>
-        </ErrorProvider>
+        </SnackbarProvider>
       </body>
     </html>
   );

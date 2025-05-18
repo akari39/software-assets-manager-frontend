@@ -4,6 +4,12 @@ export const LICENSE_STATUS = {
   0: "未领用",
 };
 
+export const LICENSE_TYPE = {
+  0: "月度订阅",
+  1: "年度订阅",
+  2: "永久授权",
+};
+
 // Main class for SoftwareLicense
 export default class SoftwareLicense {
   constructor(data) {
@@ -54,6 +60,12 @@ export default class SoftwareLicense {
   get displayLicenseStatus() {
     const statusMap = LICENSE_STATUS;
     return statusMap[this.licenseStatus] || "未知";
+  }
+
+  // Getter: map numeric license type to human-readable text
+  get displayLicenseType() {
+    const typeMap = LICENSE_TYPE;
+    return typeMap[this.licenseType] || "未知";
   }
 
   // Factory method for converting an array of raw license objects into SoftwareLicense instances
